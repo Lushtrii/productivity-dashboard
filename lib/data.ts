@@ -10,7 +10,46 @@ interface Todo {
   completionTime: string;
 }
 
-async function getAllTodos(): Promise<Todo[]> {
+interface HabitResult {
+  id: string;
+  title: string;
+  completions: HabitCompletion[];
+}
+
+interface HabitCompletion {
+  id: string;
+  targetDate: Temporal.PlainDate;
+}
+
+export async function getAllTodos(): Promise<Todo[]> {
   const todos = await sql<Todo[]>`SELECT * FROM todo_item`;
   return todos;
+}
+
+export async function getLastSevenDaysHabitResults(): Promise<HabitResult[]> {
+  const habits = sql`SELECT id, title FROM habit`;
+
+  const currentDate = Temporal.Now.plainDateISO();
+  const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
+  const habitCompletions = sql`SELECT id, habit_id, target_date FROM habit_completion WHERE target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
+
+  const [habitResults, completionResults] = await Promise.all([
+    habits,
+    habitCompletions,
+  ]);
+  const habitMap = new Map();
+  for (const completion of completionResults) {
+    habitMap.getOrInsert(completion.habitId, []).push({
+      id: completion.id,
+      targetDate: completion.targetDate,
+    });
+  }
+
+  const results = habitResults.map((habit) => ({
+    id: habit.id,
+    title: habit.title,
+    completions: habitMap.get(habit.id) ?? [],
+  }));
+
+  return results;
 }
