@@ -6,4 +6,7 @@ if (!process.env.DB_CONN_STRING) {
 
 const sql = postgres(process.env.DB_CONN_STRING, { transform: postgres.camel });
 
+// If column is DATE, return raw string rather than JS Date Object
+sql.options.parsers[1082] = (value) => Temporal.PlainDate.from(value);
+
 export default sql;
