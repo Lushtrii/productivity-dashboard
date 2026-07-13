@@ -1,5 +1,5 @@
-name: Lint + Format Check
-run-name: Lint + Format Check
+name: Code Quality Check
+run-name: Code Quality Check
 on:
   push:
     branches: [main]
@@ -54,3 +54,27 @@ jobs:
 
       - name: Run Prettier
         run: pnpm exec prettier --check .
+
+  ts-compile:
+    name: TypeScript Compile Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: "10.28.0"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "26"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: TypeScript Check
+        run: pnpm exec tsc --noEmit
