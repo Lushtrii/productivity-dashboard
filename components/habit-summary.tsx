@@ -6,11 +6,12 @@ interface HabitSummaryProps {
 
 export default function HabitSummary({ title }: HabitSummaryProps) {
   const days = [];
+  const today = Temporal.Now.plainDateISO();
   for (let i = 0; i < 7; i++) {
     days.push(
       <div className="day-track flex flex-col items-center gap-1">
         <div className="habit-circle rounded-full border-2 hover:bg-white hover:cursor-pointer"></div>
-        <span className="num">{i}</span>
+        <span className="num">{today.subtract({ days: 6 - i }).day}</span>
       </div>,
     );
   }
