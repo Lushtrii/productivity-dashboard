@@ -8,10 +8,14 @@ export default function HabitSummary({ title }: HabitSummaryProps) {
   const days = [];
   const today = Temporal.Now.plainDateISO();
   for (let i = 0; i < 7; i++) {
+    const habitDateStr = today.subtract({ days: 6 - i }).day.toString();
     days.push(
-      <div className="day-track flex flex-col items-center gap-1">
+      <div
+        className="day-track flex flex-col items-center gap-1"
+        key={habitDateStr}
+      >
         <div className="habit-circle rounded-full border-2 hover:bg-white hover:cursor-pointer"></div>
-        <span>{today.subtract({ days: 6 - i }).day}</span>
+        <span>{habitDateStr}</span>
       </div>,
     );
   }
