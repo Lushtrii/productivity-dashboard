@@ -1,5 +1,10 @@
 import { Check } from "lucide-react";
-export default function HabitSummary() {
+
+interface HabitSummaryProps {
+  title: string;
+}
+
+export default function HabitSummary({ title }: HabitSummaryProps) {
   const days = [];
   for (let i = 0; i < 7; i++) {
     days.push(
@@ -11,7 +16,7 @@ export default function HabitSummary() {
   }
   return (
     <div className="flex w-fit outline p-4 border-2 rounded-md items-start">
-      <p className="text-xl mr-8 self-start">Sleep for 8 hours</p>
+      <p className="text-xl mr-8 self-start">{title}</p>
       <div className="days flex gap-4">{days}</div>
       <button className="habit-completion-button flex justify-center items-center border-2 rounded-md ml-8 cursor-pointer hover:bg-white hover:text-black">
         <Check />
