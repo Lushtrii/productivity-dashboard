@@ -20,12 +20,14 @@ export default function HabitSummary({ title }: HabitSummaryProps) {
     );
   }
   return (
-    <div className="flex w-fit outline p-4 border-2 rounded-md items-start">
+    <div className="flex outline p-4 border-2 rounded-md items-start justify-between">
       <p className="text-xl mr-8 self-start">{title}</p>
-      <div className="days flex gap-4">{days}</div>
-      <button className="habit-completion-button flex justify-center items-center border-2 rounded-md ml-8 cursor-pointer hover:bg-white hover:text-black">
-        <Check />
-      </button>
+      <div className="flex">
+        <div className="days flex gap-4">{days}</div>
+        <button className="habit-completion-button flex justify-center items-center border-2 rounded-md ml-8 cursor-pointer hover:bg-white hover:text-black">
+          <Check />
+        </button>
+      </div>
     </div>
   );
 }

@@ -14,7 +14,7 @@ export default function HabitTracker() {
     "019f6184-a2c1-7dc7-9ac0-0f05a75747b5",
   ];
   return (
-    <div className="p-2 flex flex-col gap-4 border-3 rounded-2xl w-fit">
+    <div className="w-1/2 p-2 flex flex-col gap-4 border-3 rounded-2xl">
       {sampleTitles.map((title, i) => (
         <HabitSummary title={title} key={sampleIds[i]} />
       ))}
