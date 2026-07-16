@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import clsx from "clsx";
-import { HabitCompletion } from "@/lib/data";
+import { HabitCompletion } from "@/lib/definitions";
 
 interface HabitSummaryProps {
   title: string;
