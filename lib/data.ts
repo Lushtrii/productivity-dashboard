@@ -1,6 +1,6 @@
 import sql from "./db";
 
-interface Todo {
+export interface Todo {
   id: string;
   title: string;
   dueDate: string;
@@ -10,24 +10,24 @@ interface Todo {
   completionTime: string;
 }
 
-interface HabitResult {
+export interface HabitResult {
   id: string;
   title: string;
   completions: HabitCompletion[];
 }
 
-interface HabitCompletion {
+export interface HabitCompletion {
   id: string;
   targetDate: Temporal.PlainDate;
 }
 
-interface ActiveBlockSessionSummary {
+export interface ActiveBlockSessionSummary {
   id: string;
   title: string;
   activeTimes: TimeRange[];
 }
 
-interface TimeRange {
+export interface TimeRange {
   startTime: Temporal.PlainTime;
   endTime: Temporal.PlainTime;
 }
