@@ -1,5 +1,5 @@
 import HabitSummary from "@/components/habit-summary";
-import { HabitResult } from "@/lib/data";
+import { HabitResult } from "@/lib/definitions";
 
 interface HabitTrackerProps {
   habitData: HabitResult[];
