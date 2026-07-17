@@ -7,7 +7,7 @@ interface TodoListProps {
 
 export default function TodoList({ todos }: TodoListProps) {
   return (
-    <section className="border-4 rounded-md p-2 flex flex-col">
+    <section className="row-span-2 h-full border-4 rounded-md p-2 flex flex-col">
       <h1 className="text-2xl">Todo List</h1>
       <div className="flex flex-col gap-2">
         {todos.map((todo) => (
