@@ -7,7 +7,9 @@ import {
 } from "@/lib/definitions";
 
 export async function getAllTodos(): Promise<Todo[]> {
-  const todos = await sql<Todo[]>`SELECT * FROM todo_item`;
+  const todos = await sql<
+    Todo[]
+  >`SELECT id, title, due_date, due_time, priority_level, is_complete FROM todo_item`;
   return todos;
 }
 
