@@ -62,19 +62,42 @@ export async function getActiveBlockSessions(): Promise<
 > {
   const now = Temporal.Now.plainDateTimeISO();
   // We store day of week schedule as a single number where the first seven bits represent days of the week
-  const dayBit = now.dayOfWeek === 7 ? 1 : 1 << now.dayOfWeek;
+  const dayBit = 1 << (now.dayOfWeek - 1);
   const result = await sql`
   SELECT 
     id, 
     title,
-    STRING_TO_ARRAY(TRANSLATE(active_times::text, '{}[]()', ''), ',') as active_times
+    STRING_TO_ARRAY(TRANSLATE(active_times::text, '{}[]()', ''), ',') as active_times,
+    active_days_of_week
   FROM block_session 
   WHERE (active_days_of_week & ${dayBit}) > 0 
     AND (active_times @> ${now.toPlainTime().toString()}::time)
 `;
-  return result.map((session) => ({
-    id: session.id,
-    title: session.title,
-    activeTimes: convertTimesToTimeRanges(session.activeTimes),
-  }));
+
+  const MONDAY_BIT = 1;
+  const TUESDAY_BIT = 2;
+  const WEDNESDAY_BIT = 4;
+  const THURSDAY_BIT = 8;
+  const FRIDAY_BIT = 16;
+  const SATURDAY_BIT = 32;
+  const SUNDAY_BIT = 64;
+
+  return result.map((session) => {
+    const activeDays = [
+      (session.activeDaysOfWeek & MONDAY_BIT) > 0,
+      (session.activeDaysOfWeek & TUESDAY_BIT) > 0,
+      (session.activeDaysOfWeek & WEDNESDAY_BIT) > 0,
+      (session.activeDaysOfWeek & THURSDAY_BIT) > 0,
+      (session.activeDaysOfWeek & FRIDAY_BIT) > 0,
+      (session.activeDaysOfWeek & SATURDAY_BIT) > 0,
+      (session.activeDaysOfWeek & SUNDAY_BIT) > 0,
+    ];
+
+    return {
+      id: session.id,
+      title: session.title,
+      activeTimes: convertTimesToTimeRanges(session.activeTimes),
+      activeDays,
+    };
+  });
 }
