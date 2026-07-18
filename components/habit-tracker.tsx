@@ -14,7 +14,9 @@ export default function HabitTracker({ habitData }: HabitTrackerProps) {
         return (
           <HabitSummary
             title={habitTitle}
-            completions={habit.completions}
+            previousCompletions={habit.completions.map((completion) =>
+              JSON.stringify(completion),
+            )}
             key={habitId}
           />
         );
