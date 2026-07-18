@@ -38,14 +38,14 @@ export default function HabitSummary({
     );
   }
   return (
-    <div className="flex outline p-4 border-2 rounded-md items-start justify-between">
-      <p className="text-xl mr-8 self-start">{title}</p>
+    <section className="flex outline p-4 border-2 rounded-md items-start justify-between">
+      <h1 className="text-xl mr-8 self-start">{title}</h1>
       <div className="flex">
         <div className="days flex flex-wrap gap-4">{days}</div>
         <button className="habit-completion-button flex justify-center items-center border-2 rounded-md ml-8 cursor-pointer hover:bg-white hover:text-black">
           <Check />
         </button>
       </div>
-    </div>
+    </section>
   );
 }
