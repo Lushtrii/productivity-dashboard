@@ -5,6 +5,7 @@ import { HabitCompletion } from "@/lib/definitions";
 import { useState } from "react";
 
 interface HabitSummaryProps {
+  currentDateStr: string;
   title: string;
   previousCompletions: string[];
 }
@@ -22,11 +23,12 @@ function parseCompletionStrs(completionStrs: string[]): HabitCompletion[] {
 }
 
 function generateCompletionSummary(
+  currentDate: Temporal.PlainDate,
   completionStrs: string[],
 ): HabitCompletion[] {
   const completions = parseCompletionStrs(completionStrs);
   const formattedCompletions = new Array(NUM_COMPLETIONS_TO_DISPLAY).fill(null);
-  const startDate = Temporal.Now.plainDateISO().subtract({
+  const startDate = currentDate.subtract({
     days: NUM_COMPLETIONS_TO_DISPLAY - 1,
   });
   for (const completion of completions) {
@@ -37,14 +39,20 @@ function generateCompletionSummary(
 }
 
 export default function HabitSummary({
+  currentDateStr,
   title,
   previousCompletions,
 }: HabitSummaryProps) {
   const [completionSummary, setCompletionSummary] = useState(
-    generateCompletionSummary(previousCompletions),
+    generateCompletionSummary(
+      Temporal.PlainDate.from(currentDateStr),
+      previousCompletions,
+    ),
   );
-  const today = Temporal.Now.plainDateISO();
-  const startDate = today.subtract({ days: NUM_COMPLETIONS_TO_DISPLAY - 1 });
+  const currentDate = Temporal.PlainDate.from(currentDateStr);
+  const startDate = currentDate.subtract({
+    days: NUM_COMPLETIONS_TO_DISPLAY - 1,
+  });
   return (
     <section className="flex outline p-4 border-2 rounded-md items-start justify-between">
       <h1 className="text-xl mr-8 self-start">{title}</h1>

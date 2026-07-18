@@ -13,10 +13,10 @@ export async function getAllTodos(): Promise<Todo[]> {
   return todos;
 }
 
-export async function getLastSevenDaysHabitResults(): Promise<HabitResult[]> {
+export async function getLastSevenDaysHabitResults(
+  currentDate: Temporal.PlainDate,
+): Promise<HabitResult[]> {
   const habits = sql`SELECT id, title FROM habit`;
-
-  const currentDate = Temporal.Now.plainDateISO();
   const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
   const habitCompletions = sql`SELECT id, habit_id, target_date FROM habit_completion WHERE target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
 
@@ -57,12 +57,11 @@ function convertTimesToTimeRanges(times: string[]): TimeRange[] {
   return result;
 }
 
-export async function getActiveBlockSessions(): Promise<
-  ActiveBlockSessionSummary[]
-> {
-  const now = Temporal.Now.plainDateTimeISO();
+export async function getActiveBlockSessions(
+  currentDateTime: Temporal.PlainDateTime,
+): Promise<ActiveBlockSessionSummary[]> {
   // We store day of week schedule as a single number where the first seven bits represent days of the week
-  const dayBit = 1 << (now.dayOfWeek - 1);
+  const dayBit = 1 << (currentDateTime.dayOfWeek - 1);
   const result = await sql`
   SELECT 
     id, 
@@ -71,7 +70,7 @@ export async function getActiveBlockSessions(): Promise<
     active_days_of_week
   FROM block_session 
   WHERE (active_days_of_week & ${dayBit}) > 0 
-    AND (active_times @> ${now.toPlainTime().toString()}::time)
+    AND (active_times @> ${currentDateTime.toPlainTime().toString()}::time)
 `;
 
   const MONDAY_BIT = 1;
