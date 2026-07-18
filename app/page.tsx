@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+<<<<<<< Updated upstream
 export default function Home() {
   return (
     <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -61,5 +62,18 @@ export default function Home() {
         </div>
       </main>
     </div>
+=======
+export default async function Home() {
+  const now = Temporal.Now.plainDateTimeISO();
+  const habitData = await getLastSevenDaysHabitResults(now.toPlainDate());
+  const todoData = await getAllTodos();
+  const blockSummaries = await getActiveBlockSessions(now);
+  return (
+    <main className="w-full grid grid-cols-2 grid-rows-2 gap-2 bg-white dark:bg-black sm:items-start">
+      <HabitTracker currentDate={now.toPlainDate()} habitData={habitData} />
+      <TodoList todos={todoData} />
+      <BlockSessionList currentDateTime={now} blocks={blockSummaries} />
+    </main>
+>>>>>>> Stashed changes
   );
 }
