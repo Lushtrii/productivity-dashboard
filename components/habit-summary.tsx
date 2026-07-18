@@ -3,18 +3,20 @@ import clsx from "clsx";
 import { HabitCompletion } from "@/lib/definitions";
 
 interface HabitSummaryProps {
+  currentDateStr: string;
   title: string;
   completions: HabitCompletion[];
 }
 
 export default function HabitSummary({
+  currentDateStr,
   title,
   completions,
 }: HabitSummaryProps) {
   const days = [];
-  const today = Temporal.Now.plainDateISO();
+  const currentDate = Temporal.PlainDate.from(currentDateStr);
   for (let i = 0; i < 7; i++) {
-    const habitDate = today.subtract({ days: 6 - i });
+    const habitDate = currentDate.subtract({ days: 6 - i });
     const habitDay = habitDate.day.toString();
     const isCompleted = completions.some((c) => c.targetDate.equals(habitDate));
     days.push(
