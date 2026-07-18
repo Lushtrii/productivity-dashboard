@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 
 // From https://overreacted.io/making-setinterval-declarative-with-react-hooks/
 function useInterval(callback: () => unknown, delay: number) {
-  const savedCallback = useRef({});
+  const savedCallback = useRef(callback);
 
   // Remember the latest callback.
   useEffect(() => {
