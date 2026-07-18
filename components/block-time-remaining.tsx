@@ -1,22 +1,45 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
+// From https://overreacted.io/making-setinterval-declarative-with-react-hooks/
+function useInterval(callback: () => unknown, delay: number) {
+  const savedCallback = useRef({});
+
+  // Remember the latest callback.
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  // Set up the interval.
+  useEffect(() => {
+    function tick() {
+      savedCallback.current();
+    }
+    if (delay !== null) {
+      const id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
 
 interface BlockTimeRemainingProps {
+  currentTimeStr: string;
   sessionEndTimeStr: string;
   alwaysActive: boolean;
 }
 
 export default function BlockTimeRemaining({
+  currentTimeStr,
   sessionEndTimeStr,
   alwaysActive,
 }: BlockTimeRemainingProps) {
-  const [currentTime, setCurrentTime] = useState(Temporal.Now.plainTimeISO());
-  useEffect(() => {
-    setInterval(() => {
-      setCurrentTime(Temporal.Now.plainTimeISO());
-    }, 1000);
-  });
+  const [currentTime, setCurrentTime] = useState(
+    Temporal.PlainTime.from(currentTimeStr),
+  );
+  useInterval(() => {
+    setCurrentTime(currentTime.add({ seconds: 1 }));
+  }, 1000);
 
   if (alwaysActive) {
     return <div>Always Active</div>;

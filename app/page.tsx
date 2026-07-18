@@ -8,14 +8,15 @@ import {
 } from "@/lib/data";
 
 export default async function Home() {
-  const habitData = await getLastSevenDaysHabitResults();
+  const now = Temporal.Now.plainDateTimeISO();
+  const habitData = await getLastSevenDaysHabitResults(now.toPlainDate());
   const todoData = await getAllTodos();
-  const blockSummaries = await getActiveBlockSessions();
+  const blockSummaries = await getActiveBlockSessions(now);
   return (
     <main className="w-full grid grid-cols-2 grid-rows-2 gap-2 bg-white dark:bg-black sm:items-start">
-      <HabitTracker habitData={habitData} />
-      <TodoList todos={todoData} />
-      <BlockSessionList blocks={blockSummaries} />
+      <HabitTracker currentDate={now.toPlainDate()} habitData={habitData} />
+      <TodoList currentDate={now.toPlainDate()} todos={todoData} />
+      <BlockSessionList currentDateTime={now} blocks={blockSummaries} />
     </main>
   );
 }
