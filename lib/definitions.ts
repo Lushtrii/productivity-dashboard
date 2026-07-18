@@ -22,6 +22,7 @@ export interface ActiveBlockSessionSummary {
   id: string;
   title: string;
   activeTimes: TimeRange[];
+  activeDays: boolean[];
 }
 
 export interface TimeRange {
