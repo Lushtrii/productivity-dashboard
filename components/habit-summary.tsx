@@ -3,7 +3,7 @@ import { Check } from "lucide-react";
 import clsx from "clsx";
 import { HabitCompletion } from "@/lib/definitions";
 import { useState } from "react";
-import { addHabitCompletion } from "@/lib/data";
+import { addHabitCompletion, deleteHabitCompletion } from "@/lib/data";
 
 interface HabitSummaryProps {
   currentDateStr: string;
@@ -64,6 +64,11 @@ export default function HabitSummary({
       const id = await addHabitCompletion(habitId, targetDate.toString());
       const nextCompletionSummary = [...completionSummary];
       nextCompletionSummary[summaryInd] = { id, targetDate };
+      setCompletionSummary(nextCompletionSummary);
+    } else {
+      await deleteHabitCompletion(completionSummary[summaryInd].id);
+      const nextCompletionSummary = [...completionSummary];
+      nextCompletionSummary[summaryInd] = null;
       setCompletionSummary(nextCompletionSummary);
     }
   }

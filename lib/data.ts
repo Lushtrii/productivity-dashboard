@@ -52,6 +52,10 @@ export async function addHabitCompletion(
   return result[0].id;
 }
 
+export async function deleteHabitCompletion(completionId: string) {
+  await sql`DELETE FROM habit_completion WHERE id = ${completionId}`;
+}
+
 function convertTimesToTimeRanges(times: string[]): TimeRange[] {
   const result: TimeRange[] = [];
   for (let i = 0; i < times.length; i += 2) {
