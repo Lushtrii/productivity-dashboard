@@ -2,8 +2,9 @@
 import { Check } from "lucide-react";
 import clsx from "clsx";
 import { HabitCompletion } from "@/lib/definitions";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { addHabitCompletion, deleteHabitCompletion } from "@/lib/data";
+import { useDebouncedCallback } from "use-debounce";
 
 interface HabitSummaryProps {
   currentDateStr: string;
@@ -48,11 +49,32 @@ export default function HabitSummary({
   title,
   previousCompletions,
 }: HabitSummaryProps) {
-  const [completionSummary, setCompletionSummary] = useState(
+  const completionSummaries = useRef(
     generateCompletionSummary(
       Temporal.PlainDate.from(currentDateStr),
       previousCompletions,
     ),
+  );
+  const hasStateChanged = useRef(false);
+  const [completionToggles, setCompletionToggles] = useState(
+    generateCompletionSummary(
+      Temporal.PlainDate.from(currentDateStr),
+      previousCompletions,
+    ).map((summary) => summary !== null),
+  );
+  const updateCompletions = useDebouncedCallback(
+    async (habitId, summaryInd, targetDate) => {
+      if (!hasStateChanged.current) return;
+
+      if (completionSummaries.current[summaryInd] === null) {
+        const id = await addHabitCompletion(habitId, targetDate.toString());
+        completionSummaries.current[summaryInd] = { id, targetDate };
+      } else {
+        await deleteHabitCompletion(completionSummaries.current[summaryInd].id);
+      }
+      hasStateChanged.current = false;
+    },
+    2000,
   );
 
   async function handleCompletionClick(
@@ -60,18 +82,13 @@ export default function HabitSummary({
     summaryInd: number,
     targetDate: Temporal.PlainDate,
   ) {
-    if (completionSummary[summaryInd] === null) {
-      const id = await addHabitCompletion(habitId, targetDate.toString());
-      const nextCompletionSummary = [...completionSummary];
-      nextCompletionSummary[summaryInd] = { id, targetDate };
-      setCompletionSummary(nextCompletionSummary);
-    } else {
-      await deleteHabitCompletion(completionSummary[summaryInd].id);
-      const nextCompletionSummary = [...completionSummary];
-      nextCompletionSummary[summaryInd] = null;
-      setCompletionSummary(nextCompletionSummary);
-    }
+    hasStateChanged.current = !hasStateChanged.current;
+    const nextCompletionToggles = [...completionToggles];
+    nextCompletionToggles[summaryInd] = !nextCompletionToggles[summaryInd];
+    setCompletionToggles(nextCompletionToggles);
+    updateCompletions(habitId, summaryInd, targetDate);
   }
+
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   const startDate = currentDate.subtract({
     days: NUM_COMPLETIONS_TO_DISPLAY - 1,
@@ -81,8 +98,7 @@ export default function HabitSummary({
       <h1 className="text-xl mr-8 self-start">{title}</h1>
       <div className="flex">
         <div className="days flex flex-wrap gap-4">
-          {completionSummary.map((completion, i) => {
-            const isCompleted = completion !== null;
+          {completionToggles.map((isCompleted, i) => {
             const date = startDate.add({ days: i });
             return (
               <div
@@ -116,19 +132,14 @@ export default function HabitSummary({
             "rounded-md",
             "ml-8",
             "cursor-pointer",
-            completionSummary.at(-1) === null
-              ? ["hover:bg-white", "hover:text-black"]
-              : [
-                  "bg-white",
-                  "text-black",
-                  "hover:bg-black",
-                  "hover:text-white",
-                ],
+            completionToggles.at(-1)
+              ? ["bg-white", "text-black", "hover:bg-black", "hover:text-white"]
+              : ["hover:bg-white", "hover:text-black"],
           )}
           onClick={() =>
             handleCompletionClick(
               habitId,
-              completionSummary.length - 1,
+              completionToggles.length - 1,
               currentDate,
             )
           }
