@@ -106,7 +106,33 @@ export default function HabitSummary({
             );
           })}
         </div>
-        <button className="habit-completion-button flex justify-center items-center border-2 rounded-md ml-8 cursor-pointer hover:bg-white hover:text-black">
+        <button
+          className={clsx(
+            "habit-completion-button",
+            "flex",
+            "justify-center",
+            "items-center",
+            "border-2",
+            "rounded-md",
+            "ml-8",
+            "cursor-pointer",
+            completionSummary.at(-1) === null
+              ? ["hover:bg-white", "hover:text-black"]
+              : [
+                  "bg-white",
+                  "text-black",
+                  "hover:bg-black",
+                  "hover:text-white",
+                ],
+          )}
+          onClick={() =>
+            handleCompletionClick(
+              habitId,
+              completionSummary.length - 1,
+              currentDate,
+            )
+          }
+        >
           <Check />
         </button>
       </div>
