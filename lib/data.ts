@@ -10,7 +10,7 @@ import {
 export async function getAllTodos(): Promise<Todo[]> {
   const todos = await sql<
     Todo[]
-  >`SELECT id, title, due_date, due_time, priority_level, is_complete FROM todo_item`;
+  >`SELECT id, title, due_date, due_time, priority_level, is_complete FROM todo_item ORDER BY is_complete DESC, due_date, due_time, priority_level, id`;
   return todos;
 }
 
@@ -18,7 +18,7 @@ export async function getLastSevenDaysHabitResults(
   currentDateStr: string,
 ): Promise<HabitResult[]> {
   const currentDate = Temporal.PlainDate.from(currentDateStr);
-  const habits = sql`SELECT id, title FROM habit`;
+  const habits = sql`SELECT id, title FROM habit ORDER BY id`;
   const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
   const habitCompletions = sql`SELECT id, habit_id, target_date FROM habit_completion WHERE target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
 
@@ -87,6 +87,7 @@ export async function getActiveBlockSessions(
   FROM block_session 
   WHERE (active_days_of_week & ${dayBit}) > 0 
     AND (active_times @> ${currentDateTime.toPlainTime().toString()}::time)
+    ORDER BY id
 `;
 
   const MONDAY_BIT = 1;
