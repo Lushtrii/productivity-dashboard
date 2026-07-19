@@ -27,9 +27,11 @@ function parseCompletionStrs(completionStrs: string[]): HabitCompletion[] {
 function generateCompletionSummary(
   currentDate: Temporal.PlainDate,
   completionStrs: string[],
-): HabitCompletion[] {
+): (HabitCompletion | null)[] {
   const completions = parseCompletionStrs(completionStrs);
-  const formattedCompletions = new Array(NUM_COMPLETIONS_TO_DISPLAY).fill(null);
+  const formattedCompletions: (HabitCompletion | null)[] = new Array(
+    NUM_COMPLETIONS_TO_DISPLAY,
+  ).fill(null);
   const startDate = currentDate.subtract({
     days: NUM_COMPLETIONS_TO_DISPLAY - 1,
   });
