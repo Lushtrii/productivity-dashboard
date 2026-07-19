@@ -18,7 +18,12 @@ export async function updateTodoCompletion(
   todoID: string,
   isComplete: boolean,
 ) {
-  await sql`UPDATE todo_item SET is_complete = ${isComplete} WHERE id = ${todoID}`;
+  if (isComplete) {
+    const now = Temporal.Now.zonedDateTimeISO();
+    await sql`UPDATE todo_item SET is_complete = true, completion_time = ${now.toString({ timeZoneName: "never" })} WHERE id = ${todoID}`;
+  } else {
+    await sql`UPDATE todo_item SET is_complete = false, completion_time = null WHERE id = ${todoID}`;
+  }
 }
 
 export async function deleteTodo(todoId: string) {
