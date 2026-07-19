@@ -3,9 +3,11 @@ import { Check } from "lucide-react";
 import clsx from "clsx";
 import { HabitCompletion } from "@/lib/definitions";
 import { useState } from "react";
+import { addHabitCompletion } from "@/lib/data";
 
 interface HabitSummaryProps {
   currentDateStr: string;
+  habitId: string;
   title: string;
   previousCompletions: string[];
 }
@@ -40,6 +42,7 @@ function generateCompletionSummary(
 
 export default function HabitSummary({
   currentDateStr,
+  habitId,
   title,
   previousCompletions,
 }: HabitSummaryProps) {
@@ -49,6 +52,19 @@ export default function HabitSummary({
       previousCompletions,
     ),
   );
+
+  async function handleCompletionClick(
+    habitId: string,
+    summaryInd: number,
+    targetDate: Temporal.PlainDate,
+  ) {
+    if (completionSummary[summaryInd] === null) {
+      const id = await addHabitCompletion(habitId, targetDate.toString());
+      const nextCompletionSummary = [...completionSummary];
+      nextCompletionSummary[summaryInd] = { id, targetDate };
+      setCompletionSummary(nextCompletionSummary);
+    }
+  }
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   const startDate = currentDate.subtract({
     days: NUM_COMPLETIONS_TO_DISPLAY - 1,
@@ -76,6 +92,7 @@ export default function HabitSummary({
                     isCompleted && "hover:bg-black",
                     !isCompleted && "hover:bg-white",
                   )}
+                  onClick={() => handleCompletionClick(habitId, i, date)}
                 ></div>
                 <span>{date.day}</span>
               </div>

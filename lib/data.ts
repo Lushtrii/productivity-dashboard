@@ -1,3 +1,4 @@
+"use server";
 import sql from "./db";
 import {
   ActiveBlockSessionSummary,
@@ -14,8 +15,9 @@ export async function getAllTodos(): Promise<Todo[]> {
 }
 
 export async function getLastSevenDaysHabitResults(
-  currentDate: Temporal.PlainDate,
+  currentDateStr: string,
 ): Promise<HabitResult[]> {
+  const currentDate = Temporal.PlainDate.from(currentDateStr);
   const habits = sql`SELECT id, title FROM habit`;
   const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
   const habitCompletions = sql`SELECT id, habit_id, target_date FROM habit_completion WHERE target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
@@ -41,6 +43,16 @@ export async function getLastSevenDaysHabitResults(
   return results;
 }
 
+export async function addHabitCompletion(
+  habitId: string,
+  targetDateStr: string,
+): Promise<string> {
+  const result =
+    await sql`INSERT INTO habit_completion (habit_id, target_date) VALUES (${habitId}, ${targetDateStr}) RETURNING id`;
+  console.log(result);
+  return "";
+}
+
 function convertTimesToTimeRanges(times: string[]): TimeRange[] {
   const result: TimeRange[] = [];
   for (let i = 0; i < times.length; i += 2) {
@@ -58,9 +70,10 @@ function convertTimesToTimeRanges(times: string[]): TimeRange[] {
 }
 
 export async function getActiveBlockSessions(
-  currentDateTime: Temporal.PlainDateTime,
+  currentDateTimeStr: string,
 ): Promise<ActiveBlockSessionSummary[]> {
   // We store day of week schedule as a single number where the first seven bits represent days of the week
+  const currentDateTime = Temporal.PlainDateTime.from(currentDateTimeStr);
   const dayBit = 1 << (currentDateTime.dayOfWeek - 1);
   const result = await sql`
   SELECT 
