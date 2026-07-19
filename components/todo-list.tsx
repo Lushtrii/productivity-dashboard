@@ -2,6 +2,7 @@
 import { Todo } from "@/lib/definitions";
 import TodoItem from "@/components/todo-item";
 import { useState } from "react";
+import { updateTodoCompletion } from "@/lib/data";
 
 interface TodoListProps {
   currentDateStr: string;
@@ -30,6 +31,7 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
     const nextTodos = todos.slice();
     nextTodos[ind].isComplete = !nextTodos[ind].isComplete;
     setTodos(nextTodos);
+    updateTodoCompletion(nextTodos[ind].id, nextTodos[ind].isComplete);
   }
   const [todos, setTodos] = useState(convertStrsToTodos(todoStrs));
   const currentDate = Temporal.PlainDate.from(currentDateStr);

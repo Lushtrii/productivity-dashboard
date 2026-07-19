@@ -14,6 +14,13 @@ export async function getAllTodos(): Promise<Todo[]> {
   return todos;
 }
 
+export async function updateTodoCompletion(
+  todoID: string,
+  isComplete: boolean,
+) {
+  await sql`UPDATE todo_item SET is_complete = ${isComplete} WHERE id = ${todoID}`;
+}
+
 export async function getLastSevenDaysHabitResults(
   currentDateStr: string,
 ): Promise<HabitResult[]> {
