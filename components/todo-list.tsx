@@ -2,7 +2,7 @@
 import { Todo } from "@/lib/definitions";
 import TodoItem from "@/components/todo-item";
 import { useState } from "react";
-import { updateTodoCompletion } from "@/lib/data";
+import { deleteTodo, updateTodoCompletion } from "@/lib/data";
 
 interface TodoListProps {
   currentDateStr: string;
@@ -33,6 +33,14 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
     setTodos(nextTodos);
     updateTodoCompletion(nextTodos[ind].id, nextTodos[ind].isComplete);
   }
+
+  function handleDeletion(ind: number) {
+    const nextTodos = todos.slice();
+    const deletedTodo = nextTodos.splice(ind, 1)[0];
+    setTodos(nextTodos);
+    deleteTodo(deletedTodo.id);
+  }
+
   const [todos, setTodos] = useState(convertStrsToTodos(todoStrs));
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   return (
@@ -45,6 +53,7 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
             todo={todo}
             key={todo.id}
             handleCompletionToggle={() => handleCompletionToggle(i)}
+            handleDeletion={() => handleDeletion(i)}
           />
         ))}
       </div>

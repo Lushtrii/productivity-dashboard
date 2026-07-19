@@ -21,6 +21,10 @@ export async function updateTodoCompletion(
   await sql`UPDATE todo_item SET is_complete = ${isComplete} WHERE id = ${todoID}`;
 }
 
+export async function deleteTodo(todoId: string) {
+  await sql`DELETE FROM todo_item WHERE id = ${todoId}`;
+}
+
 export async function getLastSevenDaysHabitResults(
   currentDateStr: string,
 ): Promise<HabitResult[]> {

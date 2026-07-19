@@ -6,6 +6,7 @@ interface TodoItemProps {
   currentDate: Temporal.PlainDate;
   todo: Todo;
   handleCompletionToggle: () => void;
+  handleDeletion: () => void;
 }
 
 function formatDueDateStr(
@@ -30,6 +31,7 @@ export default function TodoItem({
   currentDate,
   todo,
   handleCompletionToggle,
+  handleDeletion,
 }: TodoItemProps) {
   return (
     <div className="flex justify-between border-2 rounded-md">
@@ -55,7 +57,7 @@ export default function TodoItem({
         >
           {todo.isComplete ? <Undo /> : <Check />}
         </button>
-        <button>
+        <button className="hover:cursor-pointer" onClick={handleDeletion}>
           <Trash />
         </button>
       </div>
