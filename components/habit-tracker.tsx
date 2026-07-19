@@ -18,8 +18,11 @@ export default function HabitTracker({
         return (
           <HabitSummary
             currentDateStr={currentDate.toString()}
+            habitId={habitId}
             title={habitTitle}
-            completions={habit.completions}
+            previousCompletions={habit.completions.map((completion) =>
+              JSON.stringify(completion),
+            )}
             key={habitId}
           />
         );
