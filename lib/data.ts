@@ -49,8 +49,7 @@ export async function addHabitCompletion(
 ): Promise<string> {
   const result =
     await sql`INSERT INTO habit_completion (habit_id, target_date) VALUES (${habitId}, ${targetDateStr}) RETURNING id`;
-  console.log(result);
-  return "";
+  return result[0].id;
 }
 
 function convertTimesToTimeRanges(times: string[]): TimeRange[] {
