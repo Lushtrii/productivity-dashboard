@@ -5,6 +5,7 @@ import { Todo } from "@/lib/definitions";
 interface TodoItemProps {
   currentDate: Temporal.PlainDate;
   todo: Todo;
+  handleCompletionToggle: () => void;
 }
 
 function formatDueDateStr(
@@ -25,7 +26,11 @@ function formatDueDateStr(
   }
 }
 
-export default function TodoItem({ currentDate, todo }: TodoItemProps) {
+export default function TodoItem({
+  currentDate,
+  todo,
+  handleCompletionToggle,
+}: TodoItemProps) {
   return (
     <div className="flex justify-between border-2 rounded-md">
       <span className={clsx(todo.isComplete && "line-through")}>
@@ -44,15 +49,12 @@ export default function TodoItem({ currentDate, todo }: TodoItemProps) {
           ) : null}
           {todo.dueTime ? <span>{todo.dueTime.toString()}</span> : null}
         </div>
-        {todo.isComplete ? (
-          <button>
-            <Undo />
-          </button>
-        ) : (
-          <button>
-            <Check />
-          </button>
-        )}
+        <button
+          className="hover:cursor-pointer"
+          onClick={handleCompletionToggle}
+        >
+          {todo.isComplete ? <Undo /> : <Check />}
+        </button>
         <button>
           <Trash />
         </button>

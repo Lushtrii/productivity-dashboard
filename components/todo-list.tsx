@@ -1,18 +1,49 @@
+"use client";
 import { Todo } from "@/lib/definitions";
 import TodoItem from "@/components/todo-item";
+import { useState } from "react";
 
 interface TodoListProps {
-  currentDate: Temporal.PlainDate;
-  todos: Todo[];
+  currentDateStr: string;
+  todoStrs: string[];
 }
 
-export default function TodoList({ currentDate, todos }: TodoListProps) {
+function convertStrsToTodos(todoStrs: string[]): Todo[] {
+  return todoStrs.map((todo) => {
+    const todoObj = JSON.parse(todo);
+    return {
+      ...todoObj,
+      dueDate:
+        todoObj.dueDate !== null
+          ? Temporal.PlainDate.from(todoObj.dueDate)
+          : null,
+      dueTime:
+        todoObj.dueTime !== null
+          ? Temporal.PlainTime.from(todoObj.dueTime)
+          : null,
+    };
+  });
+}
+
+export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
+  function handleCompletionToggle(ind: number) {
+    const nextTodos = todos.slice();
+    nextTodos[ind].isComplete = !nextTodos[ind].isComplete;
+    setTodos(nextTodos);
+  }
+  const [todos, setTodos] = useState(convertStrsToTodos(todoStrs));
+  const currentDate = Temporal.PlainDate.from(currentDateStr);
   return (
     <section className="row-span-2 h-full border-4 rounded-md p-2 flex flex-col">
       <h1 className="text-2xl">Todo List</h1>
       <div className="flex flex-col gap-2">
-        {todos.map((todo) => (
-          <TodoItem currentDate={currentDate} todo={todo} key={todo.id} />
+        {todos.map((todo, i) => (
+          <TodoItem
+            currentDate={currentDate}
+            todo={todo}
+            key={todo.id}
+            handleCompletionToggle={() => handleCompletionToggle(i)}
+          />
         ))}
       </div>
     </section>
