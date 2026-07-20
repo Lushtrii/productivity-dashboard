@@ -45,14 +45,17 @@ export default function TodoItem({
           {todo.dueDate && formatDueDateStr(currentDate, todo.dueDate)}
         </span>
         <span className="w-24">{todo.dueTime && todo.dueTime.toString()}</span>
-        <div className="flex gap-8">
+        <div className="flex gap-6">
           <button
-            className="flex h-8 w-8 justify-center items-center hover:cursor-pointer"
+            className="flex h-8 w-8 rounded-sm justify-center items-center hover:cursor-pointer hover:bg-white hover:text-black"
             onClick={handleCompletionToggle}
           >
             {todo.isComplete ? <Undo /> : <Check />}
           </button>
-          <button className="hover:cursor-pointer" onClick={handleDeletion}>
+          <button
+            className="h-8 w-8 flex justify-center items-center text-red-400 rounded-sm hover:cursor-pointer hover:bg-red-400 hover:text-black"
+            onClick={handleDeletion}
+          >
             <Trash />
           </button>
         </div>
