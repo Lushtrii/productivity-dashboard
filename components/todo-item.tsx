@@ -34,7 +34,7 @@ export default function TodoItem({
   handleDeletion,
 }: TodoItemProps) {
   return (
-    <div className="text-lg flex h-12 items-center justify-between border-2 rounded-md">
+    <div className="text-lg flex h-12 items-center justify-between border-3 rounded-md">
       <span
         className={clsx("flex-1", "ml-2", todo.isComplete && "line-through")}
       >

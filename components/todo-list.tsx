@@ -72,7 +72,7 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
   return (
     <section className="row-span-2 h-full border-4 rounded-md p-2 flex flex-col">
       <h1 className="text-2xl">Todo List</h1>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
         {todos.map((todo, i) => (
           <TodoItem
             currentDate={currentDate}
