@@ -3,6 +3,7 @@ import { Todo } from "@/lib/definitions";
 import TodoItem from "@/components/todo-item";
 import { useState } from "react";
 import { deleteTodo, updateTodoCompletion } from "@/lib/data";
+import { Plus } from "lucide-react";
 
 interface TodoListProps {
   currentDateStr: string;
@@ -83,6 +84,11 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
           />
         ))}
       </div>
+      <button className="flex mt-4 justify-center p-3 border-3 rounded-md hover:cursor-pointer hover:text-black hover:bg-white">
+        <div className="w-8 h-8 flex items-center justify-center rounded-full border-3">
+          <Plus />
+        </div>
+      </button>
     </section>
   );
 }
