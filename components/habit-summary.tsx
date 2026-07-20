@@ -74,7 +74,7 @@ export default function HabitSummary({
       }
       hasStateChanged.current = false;
     },
-    2000,
+    750,
   );
 
   async function handleCompletionClick(
