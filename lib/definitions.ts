@@ -1,10 +1,11 @@
 export interface Todo {
   id: string;
   title: string;
-  dueDate: Temporal.PlainDate;
-  dueTime: Temporal.PlainTime;
-  priorityLevel: number;
+  dueDate: Temporal.PlainDate | null;
+  dueTime: Temporal.PlainTime | null;
+  priorityLevel: number | null;
   isComplete: boolean;
+  completionTime: Temporal.PlainDateTime | null;
 }
 
 export interface HabitResult {

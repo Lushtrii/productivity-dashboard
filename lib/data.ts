@@ -10,8 +10,26 @@ import {
 export async function getAllTodos(): Promise<Todo[]> {
   const todos = await sql<
     Todo[]
-  >`SELECT id, title, due_date, due_time, priority_level, is_complete FROM todo_item ORDER BY is_complete DESC, due_date, due_time, priority_level, id`;
+  >`SELECT id, title, due_date, due_time, priority_level, is_complete, completion_time FROM todo_item ORDER BY is_complete DESC, due_date, due_time, priority_level, id`;
   return todos;
+}
+
+export async function updateTodoCompletion(
+  todoID: string,
+  isComplete: boolean,
+): Promise<string | null> {
+  if (isComplete) {
+    const now = Temporal.Now.zonedDateTimeISO();
+    await sql`UPDATE todo_item SET is_complete = true, completion_time = ${now.toString({ timeZoneName: "never" })} WHERE id = ${todoID}`;
+    return JSON.stringify(now.toPlainDateTime());
+  } else {
+    await sql`UPDATE todo_item SET is_complete = false, completion_time = null WHERE id = ${todoID}`;
+    return null;
+  }
+}
+
+export async function deleteTodo(todoId: string) {
+  await sql`DELETE FROM todo_item WHERE id = ${todoId}`;
 }
 
 export async function getLastSevenDaysHabitResults(
