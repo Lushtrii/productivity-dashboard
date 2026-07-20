@@ -34,32 +34,31 @@ export default function TodoItem({
   handleDeletion,
 }: TodoItemProps) {
   return (
-    <div className="flex justify-between border-2 rounded-md">
-      <span className={clsx(todo.isComplete && "line-through")}>
+    <div className="text-lg flex h-12 items-center justify-between border-3 rounded-md">
+      <span
+        className={clsx("flex-1", "ml-2", todo.isComplete && "line-through")}
+      >
         {todo.title}
       </span>
-      <div className="w-64 flex gap-2 justify-around">
-        <div
-          className={clsx(
-            "flex",
-            "flex-col",
-            todo.isComplete && "line-through",
-          )}
-        >
-          {todo.dueDate ? (
-            <span>{formatDueDateStr(currentDate, todo.dueDate)}</span>
-          ) : null}
-          {todo.dueTime ? <span>{todo.dueTime.toString()}</span> : null}
+      <div className="w-80 mr-4 flex items-center justify-between">
+        <span className="w-24">
+          {todo.dueDate && formatDueDateStr(currentDate, todo.dueDate)}
+        </span>
+        <span className="w-24">{todo.dueTime && todo.dueTime.toString()}</span>
+        <div className="flex gap-6">
+          <button
+            className="flex h-8 w-8 rounded-sm justify-center items-center hover:cursor-pointer hover:bg-white hover:text-black"
+            onClick={handleCompletionToggle}
+          >
+            {todo.isComplete ? <Undo /> : <Check />}
+          </button>
+          <button
+            className="h-8 w-8 flex justify-center items-center text-red-400 rounded-sm hover:cursor-pointer hover:bg-red-400 hover:text-black"
+            onClick={handleDeletion}
+          >
+            <Trash />
+          </button>
         </div>
-        <button
-          className="hover:cursor-pointer"
-          onClick={handleCompletionToggle}
-        >
-          {todo.isComplete ? <Undo /> : <Check />}
-        </button>
-        <button className="hover:cursor-pointer" onClick={handleDeletion}>
-          <Trash />
-        </button>
       </div>
     </div>
   );
