@@ -22,16 +22,42 @@ function convertStrsToTodos(todoStrs: string[]): Todo[] {
         todoObj.dueTime !== null
           ? Temporal.PlainTime.from(todoObj.dueTime)
           : null,
+      completionTime:
+        todoObj.completionTime !== null
+          ? Temporal.Instant.from(todoObj.completionTime)
+              .toZonedDateTimeISO(Temporal.Now.timeZoneId())
+              .toPlainDateTime()
+          : null,
     };
   });
 }
 
 export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
-  function handleCompletionToggle(ind: number) {
+  async function handleCompletionToggle(ind: number) {
     const nextTodos = todos.slice();
     nextTodos[ind].isComplete = !nextTodos[ind].isComplete;
+    const completionTimeStr = await updateTodoCompletion(
+      nextTodos[ind].id,
+      nextTodos[ind].isComplete,
+    );
+    nextTodos[ind].completionTime =
+      completionTimeStr !== null
+        ? Temporal.PlainDateTime.from(JSON.parse(completionTimeStr))
+        : completionTimeStr;
+    nextTodos.sort((a, b) => {
+      if (a.isComplete && !b.isComplete) return -1;
+      if (!a.isComplete && b.isComplete) return 1;
+      if (!a.isComplete && !b.isComplete) return a.id.localeCompare(b.id);
+      if (a.completionTime === null || b.completionTime === null) {
+        throw new Error("Completion times are unexpectedly null");
+      } else {
+        return Temporal.PlainDateTime.compare(
+          a.completionTime,
+          b.completionTime,
+        );
+      }
+    });
     setTodos(nextTodos);
-    updateTodoCompletion(nextTodos[ind].id, nextTodos[ind].isComplete);
   }
 
   function handleDeletion(ind: number) {
