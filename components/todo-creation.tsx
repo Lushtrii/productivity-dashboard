@@ -1,15 +1,38 @@
+"use client";
+import { Todo } from "@/lib/definitions";
 import { Calendar, Clock, CircleAlert } from "lucide-react";
+import { useState } from "react";
 
 interface TodoCreationProps {
   handleCreation: (nextState: boolean) => void;
+  handleAddTodo: (todo: Todo) => void;
 }
 
-export default function TodoCreation({ handleCreation }: TodoCreationProps) {
+export default function TodoCreation({
+  handleCreation,
+  handleAddTodo,
+}: TodoCreationProps) {
+  const [todoState, setTodoState] = useState<Todo>({
+    id: "",
+    title: "",
+    dueDate: null,
+    dueTime: null,
+    priorityLevel: null,
+    isComplete: false,
+    completionTime: null,
+  });
   return (
     <div className="flex-1 flex flex-col gap-4 border-3 rounded-md h-48 p-8 pr-4 pb-4">
       <input
         type="text"
         className="w-xl border-b-2 text-xl"
+        onChange={(e) => {
+          const nextState = {
+            ...todoState,
+            title: e.target.value,
+          };
+          setTodoState(nextState);
+        }}
         placeholder="Task name"
       />
       <div className="flex justify-between items-center">
@@ -21,6 +44,15 @@ export default function TodoCreation({ handleCreation }: TodoCreationProps) {
               className="border-2 rounded-sm p-2"
               aria-label="Date"
               type="date"
+              onChange={(e) => {
+                const nextState = {
+                  ...todoState,
+                  dueDate: e.target.value
+                    ? Temporal.PlainDate.from(e.target.value)
+                    : null,
+                };
+                setTodoState(nextState);
+              }}
             />
           </div>
           <div className="w-40 p-2 rounded-sm flex items-center gap-2">
@@ -30,6 +62,15 @@ export default function TodoCreation({ handleCreation }: TodoCreationProps) {
               className="border-2 rounded-sm p-2 w-28"
               aria-label="Time"
               type="time"
+              onChange={(e) => {
+                const nextState = {
+                  ...todoState,
+                  dueTime: e.target.value
+                    ? Temporal.PlainTime.from(e.target.value)
+                    : null,
+                };
+                setTodoState(nextState);
+              }}
             />
           </div>
           <div className="w-50 p-2 rounded-sm flex justify-start items-center gap-2">
@@ -38,6 +79,13 @@ export default function TodoCreation({ handleCreation }: TodoCreationProps) {
               name="priority"
               id="priority-list"
               defaultValue="5"
+              onChange={(e) => {
+                const nextState = {
+                  ...todoState,
+                  priorityLevel: e.target.value ? +e.target.value : null,
+                };
+                setTodoState(nextState);
+              }}
               className="border-2 rounded-sm p-2"
             >
               <option value="5"></option>
@@ -49,7 +97,10 @@ export default function TodoCreation({ handleCreation }: TodoCreationProps) {
           </div>
         </div>
         <div className="flex gap-6 items-center justify-center">
-          <button className="p-2 border-2 border-white rounded-sm bg-white text-black hover:cursor-pointer hover:bg-black hover:text-white">
+          <button
+            className="p-2 border-2 border-white rounded-sm bg-white text-black hover:cursor-pointer hover:bg-black hover:text-white"
+            onClick={() => handleAddTodo(todoState)}
+          >
             Add task
           </button>
 

@@ -3,6 +3,7 @@ import sql from "./db";
 import {
   ActiveBlockSessionSummary,
   HabitResult,
+  isTodo,
   TimeRange,
   Todo,
 } from "@/lib/definitions";
@@ -26,6 +27,36 @@ export async function updateTodoCompletion(
     await sql`UPDATE todo_item SET is_complete = false, completion_time = null WHERE id = ${todoID}`;
     return null;
   }
+}
+
+export async function addTodo(todoStr: string): Promise<string> {
+  const todo = JSON.parse(todoStr);
+  if (todo.dueDate) {
+    try {
+      todo.dueDate = Temporal.PlainDate.from(todo.dueDate);
+    } catch {
+      throw new Error("Todo.dueDate is not in a valid format");
+    }
+  }
+  if (todo.dueTime) {
+    try {
+      todo.dueTime = Temporal.PlainTime.from(todo.dueTime);
+    } catch {
+      throw new Error("Todo.dueTime is not in a valid format");
+    }
+  }
+  if (!isTodo(todo)) {
+    throw new Error("String is not a valid Todo instance");
+  }
+  if (todo.title === "") {
+    throw new Error("Title must not be empty");
+  }
+  const dueDate = todo.dueDate !== null ? todo.dueDate.toString() : null;
+  const dueTime = todo.dueTime !== null ? todo.dueTime.toString() : null;
+
+  const result =
+    await sql`INSERT INTO todo_item(title, due_date, due_time, priority_level) VALUES (${todo.title}, ${dueDate}, ${dueTime}, ${todo.priorityLevel}) RETURNING id`;
+  return result[0].id;
 }
 
 export async function deleteTodo(todoId: string) {

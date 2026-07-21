@@ -2,7 +2,7 @@
 import { Todo } from "@/lib/definitions";
 import TodoItem from "@/components/todo-item";
 import { useState } from "react";
-import { deleteTodo, updateTodoCompletion } from "@/lib/data";
+import { addTodo, deleteTodo, updateTodoCompletion } from "@/lib/data";
 import { Plus } from "lucide-react";
 import TodoCreation from "./todo-creation";
 
@@ -73,6 +73,18 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
     setActiveCreation(nextState);
   }
 
+  async function handleAddTodo(todo: Todo) {
+    if (todo.title === "") {
+      return;
+    }
+    const serialized = JSON.stringify(todo);
+    const id = await addTodo(serialized);
+    todo.id = id;
+    const nextTodos = [...todos, todo];
+    setTodos(nextTodos);
+    handleCreation(false);
+  }
+
   const [todos, setTodos] = useState(convertStrsToTodos(todoStrs));
   const [activeCreation, setActiveCreation] = useState(false);
   const currentDate = Temporal.PlainDate.from(currentDateStr);
@@ -90,7 +102,10 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
           />
         ))}
         {activeCreation ? (
-          <TodoCreation handleCreation={handleCreation} />
+          <TodoCreation
+            handleCreation={handleCreation}
+            handleAddTodo={handleAddTodo}
+          />
         ) : (
           <button
             className="flex justify-center p-3 border-3 rounded-md hover:cursor-pointer hover:text-black hover:bg-white"
