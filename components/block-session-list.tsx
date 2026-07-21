@@ -11,7 +11,7 @@ export default function BlockSessionList({
   blocks,
 }: BlockSessionListProps) {
   return (
-    <section className="p-2 flex flex-col gap-4 border-3 rounded-2xl">
+    <section className="h-full p-2 flex flex-col gap-4 border-3 rounded-2xl">
       <h1 className="text-2xl">Active Block Sessions</h1>
       <div className="flex flex-col gap-2">
         {blocks.map((block) => {
