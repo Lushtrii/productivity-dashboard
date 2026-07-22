@@ -1,8 +1,12 @@
 import SignIn from "@/components/sign-in";
 import LandingPageCard from "@/components/landing-page-card";
 import { CheckCheck, ListChecks, ShieldBan } from "lucide-react";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 
 export default async function Home() {
+  const session = await auth();
+  if (session) redirect("/dashboard");
   return (
     <main className="dark:bg-black h-screen">
       <section className="h-4/10 flex flex-col items-center justify-center mt-20">
