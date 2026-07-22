@@ -14,6 +14,24 @@ export async function getAllTodos(): Promise<Todo[]> {
   return todos;
 }
 
+export async function findOrCreateUser(
+  provider: string,
+  providerAccountId: string | number,
+): Promise<string> {
+  const provider_map = new Map();
+  provider_map.set("github", "github_id");
+
+  const provider_column = provider_map.get(provider);
+  const existingId =
+    await sql`SELECT id FROM "user" WHERE ${sql(provider_column)} = ${providerAccountId}`;
+  if (existingId.length === 0) {
+    const result =
+      await sql`INSERT INTO "user"(${sql(provider_column)}) VALUES (${providerAccountId}) RETURNING id`;
+    return result[0].id;
+  }
+  return existingId[0].id;
+}
+
 export async function updateTodoCompletion(
   todoID: string,
   isComplete: boolean,

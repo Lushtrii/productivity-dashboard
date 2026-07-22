@@ -14,6 +14,7 @@ import { redirect } from "next/navigation";
 export default async function Dashboard() {
   const session = await auth();
   if (!session) redirect("/");
+  console.log(session);
   const now = Temporal.Now.plainDateTimeISO();
   const habitData = await getLastSevenDaysHabitResults(
     now.toPlainDate().toString(),
