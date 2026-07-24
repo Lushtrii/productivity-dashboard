@@ -22,13 +22,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     jwt({ token, user, profile }) {
       if (user) {
-        token.id = user.id;
+        token.sub = user.id;
       }
       return token;
     },
-    session({ session, token, user }) {
-      session.user.id = token.id;
-      return session;
+    session({ session, token }) {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: token.sub,
+        },
+      };
     },
   },
 });
