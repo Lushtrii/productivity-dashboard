@@ -1,10 +1,7 @@
 import { signIn } from "@/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { library } from "@fortawesome/fontawesome-svg-core";
-import { fab } from "@fortawesome/free-brands-svg-icons";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import Link from "next/link";
-
-library.add(fab);
 
 export default function SignIn() {
   return (
@@ -20,8 +17,8 @@ export default function SignIn() {
           className="w-80 flex items-center justify-center gap-4 border-3 border-white rounded-sm p-2 text-black bg-white font-semibold hover:cursor-pointer hover:text-white hover:bg-black"
         >
           <i className="h-8 w-8">
-            <FontAwesomeIcon icon="fa-brands fa-github" />
-          </i>{" "}
+            <FontAwesomeIcon icon={faGithub} />
+          </i>
           Login with Github
         </button>
       </form>
