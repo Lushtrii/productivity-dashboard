@@ -53,6 +53,8 @@ export async function updateTodoCompletion(
 }
 
 export async function addTodo(todoStr: string): Promise<string> {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated.");
   const todo = JSON.parse(todoStr);
   if (todo.dueDate) {
     try {
@@ -78,7 +80,7 @@ export async function addTodo(todoStr: string): Promise<string> {
   const dueTime = todo.dueTime !== null ? todo.dueTime.toString() : null;
 
   const result =
-    await sql`INSERT INTO todo_item(title, due_date, due_time, priority_level) VALUES (${todo.title}, ${dueDate}, ${dueTime}, ${todo.priorityLevel}) RETURNING id`;
+    await sql`INSERT INTO todo_item(title, due_date, due_time, priority_level, user_id) VALUES (${todo.title}, ${dueDate}, ${dueTime}, ${todo.priorityLevel}, ${session.user?.id}) RETURNING id`;
   return result[0].id;
 }
 
