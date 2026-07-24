@@ -37,7 +37,7 @@ export default async function Dashboard() {
           <SignoutButton />
         </div>
       </header>
-      <main className="w-full grid grid-cols-2 grid-rows-2 gap-2 bg-white dark:bg-black sm:items-start">
+      <main className="flex-1 grid grid-cols-2 grid-rows-2 gap-2 bg-white dark:bg-black sm:items-start">
         <HabitTracker currentDate={now.toPlainDate()} habitData={habitData} />
         <TodoList
           currentDateStr={now.toPlainDate().toString()}
