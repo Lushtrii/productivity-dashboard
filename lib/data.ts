@@ -1,4 +1,5 @@
 "use server";
+import { auth } from "@/auth";
 import sql from "./db";
 import {
   ActiveBlockSessionSummary,
@@ -9,22 +10,44 @@ import {
 } from "@/lib/definitions";
 
 export async function getAllTodos(): Promise<Todo[]> {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated.");
   const todos = await sql<
     Todo[]
-  >`SELECT id, title, due_date, due_time, priority_level, is_complete, completion_time FROM todo_item ORDER BY is_complete DESC, due_date, due_time, priority_level, id`;
+  >`SELECT id, title, due_date, due_time, priority_level, is_complete, completion_time FROM todo_item WHERE user_id = ${session.user?.id} ORDER BY is_complete DESC, due_date, due_time, priority_level, id`;
   return todos;
+}
+
+export async function findOrCreateUser(
+  provider: string,
+  providerAccountId: string | number,
+): Promise<string> {
+  const provider_map = new Map();
+  provider_map.set("github", "github_id");
+
+  const provider_column = provider_map.get(provider);
+  const existingId =
+    await sql`SELECT id FROM "user" WHERE ${sql(provider_column)} = ${providerAccountId}`;
+  if (existingId.length === 0) {
+    const result =
+      await sql`INSERT INTO "user"(${sql(provider_column)}) VALUES (${providerAccountId}) RETURNING id`;
+    return result[0].id;
+  }
+  return existingId[0].id;
 }
 
 export async function updateTodoCompletion(
   todoID: string,
   isComplete: boolean,
 ): Promise<string | null> {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated.");
   if (isComplete) {
     const now = Temporal.Now.zonedDateTimeISO();
-    await sql`UPDATE todo_item SET is_complete = true, completion_time = ${now.toString({ timeZoneName: "never" })} WHERE id = ${todoID}`;
+    await sql`UPDATE todo_item SET is_complete = true, completion_time = ${now.toString({ timeZoneName: "never" })} WHERE id = ${todoID} AND user_id = ${session?.user?.id}`;
     return JSON.stringify(now.toPlainDateTime());
   } else {
-    await sql`UPDATE todo_item SET is_complete = false, completion_time = null WHERE id = ${todoID}`;
+    await sql`UPDATE todo_item SET is_complete = false, completion_time = null WHERE id = ${todoID} AND user_id = ${session.user?.id}`;
     return null;
   }
 }
@@ -60,35 +83,41 @@ export async function addTodo(todoStr: string): Promise<string> {
 }
 
 export async function deleteTodo(todoId: string) {
-  await sql`DELETE FROM todo_item WHERE id = ${todoId}`;
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated.");
+  await sql`DELETE FROM todo_item WHERE id = ${todoId} AND user_id = ${session.user?.id}`;
 }
 
 export async function getLastSevenDaysHabitResults(
   currentDateStr: string,
 ): Promise<HabitResult[]> {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated.");
   const currentDate = Temporal.PlainDate.from(currentDateStr);
-  const habits = sql`SELECT id, title FROM habit ORDER BY id`;
   const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
-  const habitCompletions = sql`SELECT id, habit_id, target_date FROM habit_completion WHERE target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
+  const habitResults =
+    await sql`SELECT habit.id AS habit_id, habit.title, habit_completion.id, habit_completion.target_date FROM habit_completion INNER JOIN habit ON habit_completion.habit_id = habit.id WHERE habit.user_id = ${session.user?.id} AND target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
 
-  const [habitResults, completionResults] = await Promise.all([
-    habits,
-    habitCompletions,
-  ]);
   const habitMap = new Map();
-  for (const completion of completionResults) {
-    habitMap.getOrInsert(completion.habitId, []).push({
-      id: completion.id,
-      targetDate: completion.targetDate,
+  for (const habitData of habitResults) {
+    const habit = habitMap.getOrInsert(habitData.habitId, {
+      title: habitData.title,
+      completions: [],
+    });
+    habit.completions.push({
+      id: habitData.id,
+      targetDate: habitData.targetDate,
     });
   }
 
-  const results = habitResults.map((habit) => ({
-    id: habit.id,
-    title: habit.title,
-    completions: habitMap.get(habit.id) ?? [],
-  }));
-
+  const results = [];
+  for (const [habitId, habitVal] of habitMap.entries()) {
+    results.push({
+      id: habitId,
+      title: habitVal.title,
+      completions: habitVal.completions,
+    });
+  }
   return results;
 }
 
@@ -96,12 +125,16 @@ export async function addHabitCompletion(
   habitId: string,
   targetDateStr: string,
 ): Promise<string> {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated.");
   const result =
     await sql`INSERT INTO habit_completion (habit_id, target_date) VALUES (${habitId}, ${targetDateStr}) RETURNING id`;
   return result[0].id;
 }
 
 export async function deleteHabitCompletion(completionId: string) {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated.");
   await sql`DELETE FROM habit_completion WHERE id = ${completionId}`;
 }
 
@@ -124,6 +157,8 @@ function convertTimesToTimeRanges(times: string[]): TimeRange[] {
 export async function getActiveBlockSessions(
   currentDateTimeStr: string,
 ): Promise<ActiveBlockSessionSummary[]> {
+  const session = await auth();
+  if (!session) throw new Error("Not authenticated.");
   // We store day of week schedule as a single number where the first seven bits represent days of the week
   const currentDateTime = Temporal.PlainDateTime.from(currentDateTimeStr);
   const dayBit = 1 << (currentDateTime.dayOfWeek - 1);
@@ -136,6 +171,7 @@ export async function getActiveBlockSessions(
   FROM block_session 
   WHERE (active_days_of_week & ${dayBit}) > 0 
     AND (active_times @> ${currentDateTime.toPlainTime().toString()}::time)
+    AND user_id = ${session.user?.id}
     ORDER BY id
 `;
 
