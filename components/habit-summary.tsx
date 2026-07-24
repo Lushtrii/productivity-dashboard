@@ -125,6 +125,7 @@ export default function HabitSummary({
         <button
           className={clsx(
             "habit-completion-button",
+            "shrink-0",
             "flex",
             "justify-center",
             "items-center",

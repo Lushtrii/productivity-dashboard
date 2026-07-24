@@ -22,10 +22,10 @@ export default function TodoCreation({
     completionTime: null,
   });
   return (
-    <div className="flex-1 flex flex-col gap-4 border-3 rounded-md h-48 p-8 pr-4 pb-4">
+    <div className="min-w-max min-h-max flex flex-col items-start gap-4 border-3 rounded-md p-8 pr-4 pb-4">
       <input
         type="text"
-        className="w-xl border-b-2 text-xl"
+        className="self-stretch border-b-2 text-xl max-w-xl"
         onChange={(e) => {
           const nextState = {
             ...todoState,
@@ -35,8 +35,8 @@ export default function TodoCreation({
         }}
         placeholder="Task name"
       />
-      <div className="flex justify-between items-center">
-        <div className="flex gap-4 items-center">
+      <div className="flex self-stretch justify-between items-end xl:items-center">
+        <div className="flex flex-col gap-4 items-start xl:flex-row">
           <div className="w-50 p-2 rounded-sm flex items-center gap-2">
             <Calendar />
             <input
@@ -73,7 +73,7 @@ export default function TodoCreation({
               }}
             />
           </div>
-          <div className="w-50 p-2 rounded-sm flex justify-start items-center gap-2">
+          <div className="w-50 h-15 p-2 rounded-sm flex justify-start items-center gap-2">
             <CircleAlert />
             <select
               name="priority"
@@ -96,16 +96,16 @@ export default function TodoCreation({
             </select>
           </div>
         </div>
-        <div className="flex gap-6 items-center justify-center">
+        <div className="flex gap-6 justify-center">
           <button
-            className="p-2 border-2 border-white rounded-sm bg-white text-black hover:cursor-pointer hover:bg-black hover:text-white"
+            className="shrink-0 p-2 border-2 border-white rounded-sm bg-white text-black hover:cursor-pointer hover:bg-black hover:text-white"
             onClick={() => handleAddTodo(todoState)}
           >
             Add task
           </button>
 
           <button
-            className="p-2 border-2 rounded-sm hover:cursor-pointer hover:bg-white hover:text-black hover:border-white"
+            className="shrink-0 p-2 border-2 rounded-sm hover:cursor-pointer hover:bg-white hover:text-black hover:border-white"
             onClick={() => handleCreation(false)}
           >
             Cancel

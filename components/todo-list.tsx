@@ -89,7 +89,7 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
   const [activeCreation, setActiveCreation] = useState(false);
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   return (
-    <section className="row-span-2 h-full border-4 rounded-md p-2 flex flex-col">
+    <section className="min-w-max w-full row-span-2 h-full border-4 rounded-md p-2 flex flex-col">
       <h1 className="text-2xl">Todo List</h1>
       <div className="flex flex-col gap-4">
         {todos.map((todo, i) => (
