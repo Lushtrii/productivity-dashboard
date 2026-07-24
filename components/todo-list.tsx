@@ -2,7 +2,9 @@
 import { Todo } from "@/lib/definitions";
 import TodoItem from "@/components/todo-item";
 import { useState } from "react";
-import { deleteTodo, updateTodoCompletion } from "@/lib/data";
+import { addTodo, deleteTodo, updateTodoCompletion } from "@/lib/data";
+import { Plus } from "lucide-react";
+import TodoCreation from "./todo-creation";
 
 interface TodoListProps {
   currentDateStr: string;
@@ -67,7 +69,24 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
     deleteTodo(deletedTodo.id);
   }
 
+  function handleCreation(nextState: boolean) {
+    setActiveCreation(nextState);
+  }
+
+  async function handleAddTodo(todo: Todo) {
+    if (todo.title === "") {
+      return;
+    }
+    const serialized = JSON.stringify(todo);
+    const id = await addTodo(serialized);
+    todo.id = id;
+    const nextTodos = [...todos, todo];
+    setTodos(nextTodos);
+    handleCreation(false);
+  }
+
   const [todos, setTodos] = useState(convertStrsToTodos(todoStrs));
+  const [activeCreation, setActiveCreation] = useState(false);
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   return (
     <section className="row-span-2 h-full border-4 rounded-md p-2 flex flex-col">
@@ -82,6 +101,21 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
             handleDeletion={() => handleDeletion(i)}
           />
         ))}
+        {activeCreation ? (
+          <TodoCreation
+            handleCreation={handleCreation}
+            handleAddTodo={handleAddTodo}
+          />
+        ) : (
+          <button
+            className="flex justify-center p-3 border-3 rounded-md hover:cursor-pointer hover:text-black hover:bg-white"
+            onClick={() => handleCreation(true)}
+          >
+            <div className="w-8 h-8 flex items-center justify-center rounded-full border-3">
+              <Plus />
+            </div>
+          </button>
+        )}
       </div>
     </section>
   );
