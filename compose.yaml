@@ -1,0 +1,24 @@
+services:
+  nextjs-prod-standalone:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      secrets:
+        - DB_CONN_STRING
+        - AUTH_SECRET
+        - AUTH_GITHUB_ID
+        - AUTH_GITHUB_SECRET
+    image: nextjs-productivity-dash
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+secrets:
+  DB_CONN_STRING:
+    environment: DB_CONN_STRING
+  AUTH_SECRET:
+    environment: AUTH_SECRET
+  AUTH_GITHUB_ID:
+    environment: AUTH_GITHUB_ID
+  AUTH_GITHUB_SECRET:
+    environment: AUTH_GITHUB_SECRET
