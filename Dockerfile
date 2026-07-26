@@ -12,14 +12,13 @@
   ENV HUSKY=0
   # Install project dependencies with frozen lockfile for reproducible builds
   RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
-    if [ -f pnpm-lock.yaml ]; then \
-      pnpm install --frozen-lockfile; \
-    else \
-      echo "No lockfile found." && exit 1; \
-    fi
+      pnpm install --frozen-lockfile
+
+  FROM dependencies AS dev
+  COPY . .
+  CMD ["pnpm", "dev"]
 
   FROM base AS builder
-  WORKDIR /app
   # Copy project dependencies from dependencies stage
   COPY --from=dependencies /app/node_modules ./node_modules
   # Copy application source code
@@ -37,20 +36,9 @@
       --mount=type=secret,id=AUTH_SECRET,env=AUTH_SECRET \
       --mount=type=secret,id=AUTH_GITHUB_ID,env=AUTH_GITHUB_ID \
       --mount=type=secret,id=AUTH_GITHUB_SECRET,env=AUTH_GITHUB_SECRET \
-  if [ -f pnpm-lock.yaml ]; then \
-      pnpm build; \
-    else \
-      echo "No lockfile found." && exit 1; \
-    fi
+      pnpm build
 
-  # ============================================
-  # Stage 3: Run Next.js application
-  # ============================================
-
-  FROM base AS runner
-
-  # Set working directory
-  WORKDIR /app
+  FROM dependencies as runner
 
   # Set production environment variables
   ENV NODE_ENV=production
