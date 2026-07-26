@@ -1,0 +1,53 @@
+services:
+  nextjs-prod-standalone:
+    build:
+      context: .
+      target: runner
+      secrets:
+        - DB_CONN_STRING
+        - AUTH_SECRET
+        - AUTH_GITHUB_ID
+        - AUTH_GITHUB_SECRET
+    image: nextjs-productivity-dash:prod
+    container_name: nextjs-productiy-dash-prod
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+  nextjs-dev:
+    build:
+      context: .
+      target: dev
+      secrets:
+        - DB_CONN_STRING
+        - AUTH_SECRET
+        - AUTH_GITHUB_ID
+        - AUTH_GITHUB_SECRET
+    image: nextjs-productivity-dash:dev
+    container_name: nextjs-productivity-dash-dev
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    environment:
+      - WATCHPACK_POLLING=true
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+            - .next/
+        - action: rebuild
+          path: package.json
+
+secrets:
+  DB_CONN_STRING:
+    environment: DB_CONN_STRING
+  AUTH_SECRET:
+    environment: AUTH_SECRET
+  AUTH_GITHUB_ID:
+    environment: AUTH_GITHUB_ID
+  AUTH_GITHUB_SECRET:
+    environment: AUTH_GITHUB_SECRET
