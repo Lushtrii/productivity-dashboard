@@ -11,12 +11,17 @@ import { SignoutButton } from "@/components/sign-out";
 import Image from "next/image";
 import { GUEST_DEMO_ID } from "@/lib/definitions";
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
 
 export default async function Dashboard() {
   const session = await auth();
   const userId = await getEffectiveUserId();
   const demoModeEnabled = userId === GUEST_DEMO_ID;
-  const now = Temporal.Now.plainDateTimeISO();
+  const cookieStore = await cookies();
+  const userTimezone = cookieStore.has("user-timezone")
+    ? cookieStore.get("user-timezone")?.value
+    : "UTC";
+  const now = Temporal.Now.zonedDateTimeISO(userTimezone).toPlainDateTime();
   const habitData = await getLastSevenDaysHabitResults(
     now.toPlainDate().toString(),
   );
