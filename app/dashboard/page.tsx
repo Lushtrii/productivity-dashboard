@@ -40,7 +40,11 @@ export default async function Dashboard() {
         </div>
       </header>
       <main className="pl-4 pb-4 pr-4 flex-1 flex flex-col lg:grid lg:grid-cols-2 lg:grid-rows-2 gap-2 bg-white dark:bg-black sm:items-start">
-        <HabitTracker currentDate={now.toPlainDate()} habitData={habitData} />
+        <HabitTracker
+          currentDate={now.toPlainDate()}
+          habitData={habitData}
+          demoModeEnabled={demoModeEnabled}
+        />
         <TodoList
           currentDateStr={now.toPlainDate().toString()}
           todoStrs={todoData.map((todo) => JSON.stringify(todo))}
