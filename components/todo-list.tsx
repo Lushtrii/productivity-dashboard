@@ -4,11 +4,13 @@ import TodoItem from "@/components/todo-item";
 import { useState } from "react";
 import { addTodo, deleteTodo, updateTodoCompletion } from "@/lib/data";
 import { Plus } from "lucide-react";
+import { uuidv7 } from "uuidv7";
 import TodoCreation from "./todo-creation";
 
 interface TodoListProps {
   currentDateStr: string;
   todoStrs: string[];
+  demoModeEnabled: boolean;
 }
 
 function convertStrsToTodos(todoStrs: string[]): Todo[] {
@@ -34,18 +36,30 @@ function convertStrsToTodos(todoStrs: string[]): Todo[] {
   });
 }
 
-export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
+export default function TodoList({
+  currentDateStr,
+  todoStrs,
+  demoModeEnabled,
+}: TodoListProps) {
   async function handleCompletionToggle(ind: number) {
     const nextTodos = todos.slice();
     nextTodos[ind].isComplete = !nextTodos[ind].isComplete;
-    const completionTimeStr = await updateTodoCompletion(
-      nextTodos[ind].id,
-      nextTodos[ind].isComplete,
-    );
-    nextTodos[ind].completionTime =
-      completionTimeStr !== null
-        ? Temporal.PlainDateTime.from(JSON.parse(completionTimeStr))
-        : completionTimeStr;
+    let completionTime = null;
+    if (!demoModeEnabled) {
+      const resultStr = await updateTodoCompletion(
+        nextTodos[ind].id,
+        nextTodos[ind].isComplete,
+      );
+      completionTime =
+        resultStr !== null
+          ? Temporal.PlainDateTime.from(JSON.parse(resultStr))
+          : null;
+      nextTodos[ind].completionTime = completionTime;
+    } else {
+      nextTodos[ind].completionTime = nextTodos[ind].isComplete
+        ? Temporal.Now.plainDateTimeISO()
+        : null;
+    }
     nextTodos.sort((a, b) => {
       if (a.isComplete && !b.isComplete) return -1;
       if (!a.isComplete && b.isComplete) return 1;
@@ -66,7 +80,9 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
     const nextTodos = todos.slice();
     const deletedTodo = nextTodos.splice(ind, 1)[0];
     setTodos(nextTodos);
-    deleteTodo(deletedTodo.id);
+    if (!demoModeEnabled) {
+      deleteTodo(deletedTodo.id);
+    }
   }
 
   function handleCreation(nextState: boolean) {
@@ -78,7 +94,12 @@ export default function TodoList({ currentDateStr, todoStrs }: TodoListProps) {
       return;
     }
     const serialized = JSON.stringify(todo);
-    const id = await addTodo(serialized);
+    let id = "";
+    if (!demoModeEnabled) {
+      id = await addTodo(serialized);
+    } else {
+      id = uuidv7();
+    }
     todo.id = id;
     const nextTodos = [...todos, todo];
     setTodos(nextTodos);

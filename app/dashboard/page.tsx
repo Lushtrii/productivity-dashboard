@@ -44,6 +44,7 @@ export default async function Dashboard() {
         <TodoList
           currentDateStr={now.toPlainDate().toString()}
           todoStrs={todoData.map((todo) => JSON.stringify(todo))}
+          demoModeEnabled={demoModeEnabled}
         />
         <BlockSessionList currentDateTime={now} blocks={blockSummaries} />
       </main>

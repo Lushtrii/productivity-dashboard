@@ -11,6 +11,7 @@ interface HabitSummaryProps {
   habitId: string;
   title: string;
   previousCompletions: string[];
+  demoModeEnabled: boolean;
 }
 
 const NUM_COMPLETIONS_TO_DISPLAY = 7;
@@ -48,6 +49,7 @@ export default function HabitSummary({
   habitId,
   title,
   previousCompletions,
+  demoModeEnabled,
 }: HabitSummaryProps) {
   const completionSummaries = useRef(
     generateCompletionSummary(
@@ -72,6 +74,7 @@ export default function HabitSummary({
       } else {
         await deleteHabitCompletion(completionSummaries.current[summaryInd].id);
       }
+
       hasStateChanged.current = false;
     },
     750,
@@ -86,7 +89,9 @@ export default function HabitSummary({
     const nextCompletionToggles = [...completionToggles];
     nextCompletionToggles[summaryInd] = !nextCompletionToggles[summaryInd];
     setCompletionToggles(nextCompletionToggles);
-    updateCompletions(habitId, summaryInd, targetDate);
+    if (!demoModeEnabled) {
+      updateCompletions(habitId, summaryInd, targetDate);
+    }
   }
 
   const currentDate = Temporal.PlainDate.from(currentDateStr);
