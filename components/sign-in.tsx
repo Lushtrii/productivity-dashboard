@@ -1,7 +1,6 @@
-import { signIn } from "@/auth";
+import { signIn, startGuestSession } from "@/auth";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import Link from "next/link";
 
 export default function SignIn() {
   return (
@@ -9,7 +8,7 @@ export default function SignIn() {
       <form
         action={async () => {
           "use server";
-          await signIn("github");
+          await signIn("github", { redirectTo: "/dashboard" });
         }}
       >
         <button
@@ -22,11 +21,16 @@ export default function SignIn() {
           Login with Github
         </button>
       </form>
-      <Link href="/demo">
-        <div className="border-2 flex items-center justify-center p-2 rounded-sm hover:cursor-pointer hover:text-black hover:bg-white font-semibold">
+      <form
+        action={async () => {
+          "use server";
+          await startGuestSession();
+        }}
+      >
+        <button className="w-80 border-2 flex items-center justify-center p-2 rounded-sm hover:cursor-pointer hover:text-black hover:bg-white font-semibold">
           Try the demo
-        </div>
-      </Link>
+        </button>
+      </form>
     </div>
   );
 }

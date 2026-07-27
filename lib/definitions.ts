@@ -53,3 +53,5 @@ export interface TimeRange {
   startTime: Temporal.PlainTime;
   endTime: Temporal.PlainTime;
 }
+
+export const GUEST_DEMO_ID = "019f8a49-a71a-7cb8-a43f-0e83051e87b3";

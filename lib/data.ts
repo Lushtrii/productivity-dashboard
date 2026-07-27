@@ -1,20 +1,34 @@
 "use server";
 import { auth } from "@/auth";
+import { cookies } from "next/headers";
 import sql from "./db";
 import {
   ActiveBlockSessionSummary,
+  GUEST_DEMO_ID,
   HabitResult,
   isTodo,
   TimeRange,
   Todo,
 } from "@/lib/definitions";
 
-export async function getAllTodos(): Promise<Todo[]> {
+export async function getEffectiveUserId(): Promise<string> {
   const session = await auth();
-  if (!session) throw new Error("Not authenticated.");
+
+  if (session?.user?.id) return session.user.id;
+
+  const cookieStore = await cookies();
+  if (cookieStore.has("demo_mode")) {
+    const demoModeEnabled = cookieStore.get("demo_mode")?.value === "true";
+    if (demoModeEnabled) return GUEST_DEMO_ID;
+  }
+  throw new Error("Not authenticated");
+}
+
+export async function getAllTodos(): Promise<Todo[]> {
+  const userId = await getEffectiveUserId();
   const todos = await sql<
     Todo[]
-  >`SELECT id, title, due_date, due_time, priority_level, is_complete, completion_time FROM todo_item WHERE user_id = ${session.user?.id} ORDER BY is_complete DESC, due_date, due_time, priority_level, id`;
+  >`SELECT id, title, due_date, due_time, priority_level, is_complete, completion_time FROM todo_item WHERE user_id = ${userId} ORDER BY is_complete DESC, due_date, due_time, priority_level, id`;
   return todos;
 }
 
@@ -40,21 +54,23 @@ export async function updateTodoCompletion(
   todoID: string,
   isComplete: boolean,
 ): Promise<string | null> {
-  const session = await auth();
-  if (!session) throw new Error("Not authenticated.");
+  const userId = await getEffectiveUserId();
+  if (userId === GUEST_DEMO_ID)
+    throw new Error("Mutation blocked for demo mode.");
   if (isComplete) {
     const now = Temporal.Now.zonedDateTimeISO();
-    await sql`UPDATE todo_item SET is_complete = true, completion_time = ${now.toString({ timeZoneName: "never" })} WHERE id = ${todoID} AND user_id = ${session?.user?.id}`;
+    await sql`UPDATE todo_item SET is_complete = true, completion_time = ${now.toString({ timeZoneName: "never" })} WHERE id = ${todoID} AND user_id = ${userId}`;
     return JSON.stringify(now.toPlainDateTime());
   } else {
-    await sql`UPDATE todo_item SET is_complete = false, completion_time = null WHERE id = ${todoID} AND user_id = ${session.user?.id}`;
+    await sql`UPDATE todo_item SET is_complete = false, completion_time = null WHERE id = ${todoID} AND user_id = ${userId}`;
     return null;
   }
 }
 
 export async function addTodo(todoStr: string): Promise<string> {
-  const session = await auth();
-  if (!session) throw new Error("Not authenticated.");
+  const userId = await getEffectiveUserId();
+  if (userId === GUEST_DEMO_ID)
+    throw new Error("Mutation blocked for demo mode.");
   const todo = JSON.parse(todoStr);
   if (todo.dueDate) {
     try {
@@ -80,25 +96,25 @@ export async function addTodo(todoStr: string): Promise<string> {
   const dueTime = todo.dueTime !== null ? todo.dueTime.toString() : null;
 
   const result =
-    await sql`INSERT INTO todo_item(title, due_date, due_time, priority_level, user_id) VALUES (${todo.title}, ${dueDate}, ${dueTime}, ${todo.priorityLevel}, ${session.user?.id}) RETURNING id`;
+    await sql`INSERT INTO todo_item(title, due_date, due_time, priority_level, user_id) VALUES (${todo.title}, ${dueDate}, ${dueTime}, ${todo.priorityLevel}, ${userId}) RETURNING id`;
   return result[0].id;
 }
 
 export async function deleteTodo(todoId: string) {
-  const session = await auth();
-  if (!session) throw new Error("Not authenticated.");
-  await sql`DELETE FROM todo_item WHERE id = ${todoId} AND user_id = ${session.user?.id}`;
+  const userId = await getEffectiveUserId();
+  if (userId === GUEST_DEMO_ID)
+    throw new Error("Mutation blocked for demo mode.");
+  await sql`DELETE FROM todo_item WHERE id = ${todoId} AND user_id = ${userId}`;
 }
 
 export async function getLastSevenDaysHabitResults(
   currentDateStr: string,
 ): Promise<HabitResult[]> {
-  const session = await auth();
-  if (!session) throw new Error("Not authenticated.");
+  const userId = await getEffectiveUserId();
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
   const habitResults =
-    await sql`SELECT habit.id AS habit_id, habit.title, habit_completion.id, habit_completion.target_date FROM habit_completion INNER JOIN habit ON habit_completion.habit_id = habit.id WHERE habit.user_id = ${session.user?.id} AND target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
+    await sql`SELECT habit.id AS habit_id, habit.title, habit_completion.id, habit_completion.target_date FROM habit_completion INNER JOIN habit ON habit_completion.habit_id = habit.id WHERE habit.user_id = ${userId} AND target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
 
   const habitMap = new Map();
   for (const habitData of habitResults) {
@@ -127,16 +143,18 @@ export async function addHabitCompletion(
   habitId: string,
   targetDateStr: string,
 ): Promise<string> {
-  const session = await auth();
-  if (!session) throw new Error("Not authenticated.");
+  const userId = await getEffectiveUserId();
+  if (userId === GUEST_DEMO_ID)
+    throw new Error("Mutation blocked for demo mode.");
   const result =
     await sql`INSERT INTO habit_completion (habit_id, target_date) VALUES (${habitId}, ${targetDateStr}) RETURNING id`;
   return result[0].id;
 }
 
 export async function deleteHabitCompletion(completionId: string) {
-  const session = await auth();
-  if (!session) throw new Error("Not authenticated.");
+  const userId = await getEffectiveUserId();
+  if (userId === GUEST_DEMO_ID)
+    throw new Error("Mutation blocked for demo mode.");
   await sql`DELETE FROM habit_completion WHERE id = ${completionId}`;
 }
 
@@ -159,8 +177,7 @@ function convertTimesToTimeRanges(times: string[]): TimeRange[] {
 export async function getActiveBlockSessions(
   currentDateTimeStr: string,
 ): Promise<ActiveBlockSessionSummary[]> {
-  const session = await auth();
-  if (!session) throw new Error("Not authenticated.");
+  const userId = await getEffectiveUserId();
   // We store day of week schedule as a single number where the first seven bits represent days of the week
   const currentDateTime = Temporal.PlainDateTime.from(currentDateTimeStr);
   const dayBit = 1 << (currentDateTime.dayOfWeek - 1);
@@ -173,7 +190,7 @@ export async function getActiveBlockSessions(
   FROM block_session 
   WHERE (active_days_of_week & ${dayBit}) > 0 
     AND (active_times @> ${currentDateTime.toPlainTime().toString()}::time)
-    AND user_id = ${session.user?.id}
+    AND user_id = ${userId}
     ORDER BY id
 `;
 

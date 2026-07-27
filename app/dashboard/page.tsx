@@ -5,15 +5,17 @@ import {
   getAllTodos,
   getLastSevenDaysHabitResults,
   getActiveBlockSessions,
+  getEffectiveUserId,
 } from "@/lib/data";
-import { auth } from "@/auth";
 import { SignoutButton } from "@/components/sign-out";
 import Image from "next/image";
-import { redirect } from "next/navigation";
+import { GUEST_DEMO_ID } from "@/lib/definitions";
+import { auth } from "@/auth";
 
 export default async function Dashboard() {
   const session = await auth();
-  if (!session) redirect("/");
+  const userId = await getEffectiveUserId();
+  const demoModeEnabled = userId === GUEST_DEMO_ID;
   const now = Temporal.Now.plainDateTimeISO();
   const habitData = await getLastSevenDaysHabitResults(
     now.toPlainDate().toString(),
@@ -33,7 +35,7 @@ export default async function Dashboard() {
               className="rounded-full"
             />
           )}
-          {session?.user?.name}
+          {demoModeEnabled ? "Guest Mode" : session?.user?.name}
           <SignoutButton />
         </div>
       </header>
