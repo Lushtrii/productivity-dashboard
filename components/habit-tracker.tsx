@@ -4,11 +4,13 @@ import { HabitResult } from "@/lib/definitions";
 interface HabitTrackerProps {
   currentDate: Temporal.PlainDate;
   habitData: HabitResult[];
+  demoModeEnabled: boolean;
 }
 
 export default function HabitTracker({
   currentDate,
   habitData,
+  demoModeEnabled,
 }: HabitTrackerProps) {
   return (
     <div className="w-full p-2 h-full flex flex-col gap-4 border-3 rounded-2xl">
@@ -24,6 +26,7 @@ export default function HabitTracker({
               JSON.stringify(completion),
             )}
             key={habitId}
+            demoModeEnabled={demoModeEnabled}
           />
         );
       })}

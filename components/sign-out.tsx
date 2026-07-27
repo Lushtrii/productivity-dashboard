@@ -1,11 +1,16 @@
 import { signOut } from "@/auth";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function SignoutButton() {
   return (
     <form
       action={async () => {
         "use server";
+        const cookieStore = await cookies();
+        cookieStore.delete("demo_mode");
         await signOut();
+        redirect("/");
       }}
     >
       <button
