@@ -1,0 +1,57 @@
+name: Deploy
+runs-on:
+  push:
+    branches:
+      - main
+
+paths-ignore:
+  - "**.md"
+  - ".gitignore"
+  - ".github/**"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+      - uses: actions/checkout@v6
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        env:
+          AWS_REGION: ca-west-1
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: $AWS_REGION
+
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push image to Amazon ECRkPush Docker Image to Container Registry (ECR)
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: SSH into EC2, Pull, and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          envs: ECR_REGISTRY,ECR_REPOSITORY,AWS_REGION
+          script: |
+            aws ecr get-login-password --region $AWS_REGION | docker login --user AWS --password-stdin $ECR_REGISTRY
+            cd ~/productivity-dashboard
+            docker compose pull
+            docker compose up -d
+            docker image prune -f
