@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  lint:
-    name: ESLint Check
+  quality-check:
+    name: Code Quality Check
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -31,50 +31,8 @@ jobs:
       - name: Run ESLint
         run: pnpm exec eslint .
 
-  format:
-    name: Prettier Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v6
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: "10.28.0"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "26"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Run Prettier
         run: pnpm exec prettier --check .
 
-  ts-compile:
-    name: TypeScript Compile Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v6
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: "10.28.0"
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "26"
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: TypeScript Check
+      - name: Run TypeScript Check
         run: pnpm exec tsc --noEmit
