@@ -38,6 +38,15 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Authorize Runner IP
+        id: ip
+        run: |
+          RUNNER_IP=$(curl -s https://checkip.amazonaws.com)
+          echo "runner_ip=$RUNNER_IP" >> $GITHUB_OUTPUT
+          aws ec2 authorize-security-group-ingress \
+            --group-id ${{ secrets.AWS_SG_ID }} \
+            --protocol tcp --port 22 --cidr ${RUNNER_IP}/32
+
       - name: SSH into EC2, Pull, and Deploy
         uses: appleboy/ssh-action@v1.0.3
         env:
@@ -54,3 +63,10 @@ jobs:
             docker compose pull
             docker compose up -d
             docker image prune -f
+
+      - name: Revoke Runner IP
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id ${{ secrets.AWS_SG_ID }} \
+            --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.runner_ip }}/32
