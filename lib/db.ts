@@ -1,12 +1,11 @@
 import postgres from "postgres";
 
-if (!process.env.DB_CONN_STRING) {
-  throw new Error("Missing env variable: DB_CONN_STRING");
-}
+const connectionString =
+  process.env.DB_CONN_STRING ||
+  "postgres://placeholder:placeholder@127.0.0.1:5432/placeholder";
 
-const sql = postgres(process.env.DB_CONN_STRING, { transform: postgres.camel });
+const sql = postgres(connectionString, { transform: postgres.camel });
 
-// If column is DATE, return Temporal rather than JS Date Object
 sql.options.parsers[1082] = (value) => Temporal.PlainDate.from(value);
 
 export default sql;
