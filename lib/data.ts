@@ -113,7 +113,7 @@ export async function getLastSevenDaysHabitResults(
   const userId = await getEffectiveUserId();
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
-  const habitQuery = sql`SELECT habit.id as habit_id, habit.title FROM habit`;
+  const habitQuery = sql`SELECT habit.id as habit_id, habit.title FROM habit WHERE habit.user_id = ${userId}`;
   const habitResultQuery = sql`SELECT habit.id AS habit_id, habit.title, habit_completion.id, habit_completion.target_date FROM habit_completion INNER JOIN habit ON habit_completion.habit_id = habit.id WHERE habit.user_id = ${userId} AND target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
   const [habits, habitResults] = await Promise.all([
     habitQuery,
