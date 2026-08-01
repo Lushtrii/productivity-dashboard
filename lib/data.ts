@@ -113,15 +113,23 @@ export async function getLastSevenDaysHabitResults(
   const userId = await getEffectiveUserId();
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
-  const habitResults =
-    await sql`SELECT habit.id AS habit_id, habit.title, habit_completion.id, habit_completion.target_date FROM habit_completion INNER JOIN habit ON habit_completion.habit_id = habit.id WHERE habit.user_id = ${userId} AND target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
+  const habitQuery = sql`SELECT habit.id as habit_id, habit.title FROM habit`;
+  const habitResultQuery = sql`SELECT habit.id AS habit_id, habit.title, habit_completion.id, habit_completion.target_date FROM habit_completion INNER JOIN habit ON habit_completion.habit_id = habit.id WHERE habit.user_id = ${userId} AND target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
+  const [habits, habitResults] = await Promise.all([
+    habitQuery,
+    habitResultQuery,
+  ]);
 
   const habitMap = new Map();
-  for (const habitData of habitResults) {
-    const habit = habitMap.getOrInsert(habitData.habitId, {
+
+  for (const habitData of habits) {
+    habitMap.getOrInsert(habitData.habitId, {
       title: habitData.title,
       completions: [],
     });
+  }
+  for (const habitData of habitResults) {
+    const habit = habitMap.get(habitData.habitId);
     habit.completions.push({
       id: habitData.id,
       targetDate: habitData.targetDate,
