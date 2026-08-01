@@ -5,6 +5,7 @@ import { addHabit } from "@/lib/data";
 import { HabitResult } from "@/lib/definitions";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { uuidv7 } from "uuidv7";
 
 interface HabitTrackerProps {
   currentDateStr: string;
@@ -42,7 +43,10 @@ export default function HabitTracker({
   async function handleAddHabit(habitTitle: string) {
     if (habitTitle === "") return;
 
-    const habitId = await addHabit(habitTitle);
+    let habitId = uuidv7();
+    if (!demoModeEnabled) {
+      habitId = await addHabit(habitTitle);
+    }
     const habit: HabitResult = {
       id: habitId,
       title: habitTitle,
