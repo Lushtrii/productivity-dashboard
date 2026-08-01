@@ -1,1 +1,1 @@
-pnpx tsc --noEmit
+pnpm exec tsc --noEmit
