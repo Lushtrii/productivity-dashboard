@@ -159,6 +159,15 @@ export async function addHabitCompletion(
   return result[0].id;
 }
 
+export async function addHabit(habitTitle: string): Promise<string> {
+  const userId = await getEffectiveUserId();
+  if (userId === GUEST_DEMO_ID)
+    throw new Error("Mutation blocked for demo mode.");
+  const result =
+    await sql`INSERT INTO habit(title, user_id) VALUES (${habitTitle}, ${userId}) RETURNING id`;
+  return result[0].id;
+}
+
 export async function deleteHabitCompletion(completionId: string) {
   const userId = await getEffectiveUserId();
   if (userId === GUEST_DEMO_ID)
