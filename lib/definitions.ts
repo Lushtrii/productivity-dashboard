@@ -31,6 +31,11 @@ export function isTodo(obj: unknown): obj is Todo {
   );
 }
 
+export interface Habit {
+  id: string;
+  title: string;
+}
+
 export interface HabitResult {
   id: string;
   title: string;
@@ -40,6 +45,7 @@ export interface HabitResult {
 export interface HabitCompletion {
   id: string;
   targetDate: Temporal.PlainDate;
+  habitId: string;
 }
 
 export interface ActiveBlockSessionSummary {

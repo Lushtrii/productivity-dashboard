@@ -5,11 +5,17 @@ import sql from "./db";
 import {
   ActiveBlockSessionSummary,
   GUEST_DEMO_ID,
+  Habit,
+  HabitCompletion,
   HabitResult,
   isTodo,
-  TimeRange,
   Todo,
 } from "@/lib/definitions";
+import {
+  convertTimesToTimeRanges,
+  getActiveDaysArray,
+  getHabitResultsFromQueries,
+} from "./utils";
 
 export async function getEffectiveUserId(): Promise<string> {
   const session = await auth();
@@ -113,38 +119,18 @@ export async function getLastSevenDaysHabitResults(
   const userId = await getEffectiveUserId();
   const currentDate = Temporal.PlainDate.from(currentDateStr);
   const sevenDaysPrior = currentDate.subtract({ weeks: 1 });
-  const habitQuery = sql`SELECT habit.id as habit_id, habit.title FROM habit WHERE habit.user_id = ${userId}`;
-  const habitResultQuery = sql`SELECT habit.id AS habit_id, habit.title, habit_completion.id, habit_completion.target_date FROM habit_completion INNER JOIN habit ON habit_completion.habit_id = habit.id WHERE habit.user_id = ${userId} AND target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
-  const [habits, habitResults] = await Promise.all([
+  const habitQuery = sql<
+    Habit[]
+  >`SELECT id, title FROM habit WHERE user_id = ${userId}`;
+  const habitCompletionQuery = sql<
+    HabitCompletion[]
+  >`SELECT habit.id AS habit_id, habit_completion.id, habit_completion.target_date FROM habit_completion INNER JOIN habit ON habit_completion.habit_id = habit.id WHERE habit.user_id = ${userId} AND target_date >= ${sevenDaysPrior.toString()} AND target_date <= ${currentDate.toString()}`;
+  const [habits, habitCompletions] = await Promise.all([
     habitQuery,
-    habitResultQuery,
+    habitCompletionQuery,
   ]);
 
-  const habitMap = new Map();
-
-  for (const habitData of habits) {
-    habitMap.getOrInsert(habitData.habitId, {
-      title: habitData.title,
-      completions: [],
-    });
-  }
-  for (const habitData of habitResults) {
-    const habit = habitMap.get(habitData.habitId);
-    habit.completions.push({
-      id: habitData.id,
-      targetDate: habitData.targetDate,
-    });
-  }
-
-  const results = [];
-  for (const [habitId, habitVal] of habitMap.entries()) {
-    results.push({
-      id: habitId,
-      title: habitVal.title,
-      completions: habitVal.completions,
-    });
-  }
-  return results;
+  return getHabitResultsFromQueries(habits, habitCompletions);
 }
 
 export async function addHabitCompletion(
@@ -175,22 +161,6 @@ export async function deleteHabitCompletion(completionId: string) {
   await sql`DELETE FROM habit_completion WHERE id = ${completionId}`;
 }
 
-function convertTimesToTimeRanges(times: string[]): TimeRange[] {
-  const result: TimeRange[] = [];
-  for (let i = 0; i < times.length; i += 2) {
-    const startTime = Temporal.PlainTime.from(times[i]);
-    const endTime =
-      times[i + 1] === "24:00:00"
-        ? new Temporal.PlainTime(23, 59, 59)
-        : Temporal.PlainTime.from(times[i + 1]);
-    result.push({
-      startTime,
-      endTime,
-    });
-  }
-  return result;
-}
-
 export async function getActiveBlockSessions(
   currentDateTimeStr: string,
 ): Promise<ActiveBlockSessionSummary[]> {
@@ -211,30 +181,12 @@ export async function getActiveBlockSessions(
     ORDER BY id
 `;
 
-  const MONDAY_BIT = 1;
-  const TUESDAY_BIT = 2;
-  const WEDNESDAY_BIT = 4;
-  const THURSDAY_BIT = 8;
-  const FRIDAY_BIT = 16;
-  const SATURDAY_BIT = 32;
-  const SUNDAY_BIT = 64;
-
   return result.map((session) => {
-    const activeDays = [
-      (session.activeDaysOfWeek & MONDAY_BIT) > 0,
-      (session.activeDaysOfWeek & TUESDAY_BIT) > 0,
-      (session.activeDaysOfWeek & WEDNESDAY_BIT) > 0,
-      (session.activeDaysOfWeek & THURSDAY_BIT) > 0,
-      (session.activeDaysOfWeek & FRIDAY_BIT) > 0,
-      (session.activeDaysOfWeek & SATURDAY_BIT) > 0,
-      (session.activeDaysOfWeek & SUNDAY_BIT) > 0,
-    ];
-
     return {
       id: session.id,
       title: session.title,
       activeTimes: convertTimesToTimeRanges(session.activeTimes),
-      activeDays,
+      activeDays: getActiveDaysArray(session.activeDaysOfWeek),
     };
   });
 }
