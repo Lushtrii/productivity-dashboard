@@ -20,6 +20,7 @@ function parseCompletionStrs(completionStrs: string[]): HabitCompletion[] {
   return completionStrs.map((completionStr) => {
     const obj = JSON.parse(completionStr);
     return {
+      habitId: obj.habitId,
       id: obj.id,
       targetDate: Temporal.PlainDate.from(obj.targetDate),
     };
@@ -70,7 +71,7 @@ export default function HabitSummary({
 
       if (completionSummaries.current[summaryInd] === null) {
         const id = await addHabitCompletion(habitId, targetDate.toString());
-        completionSummaries.current[summaryInd] = { id, targetDate };
+        completionSummaries.current[summaryInd] = { id, targetDate, habitId };
       } else {
         await deleteHabitCompletion(completionSummaries.current[summaryInd].id);
       }
