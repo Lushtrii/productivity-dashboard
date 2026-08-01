@@ -28,7 +28,7 @@ services:
     ports:
       - 3000:3000
     env_file:
-      - .env
+      - .env.local
     environment:
       - WATCHPACK_POLLING=true
     develop:
